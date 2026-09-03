@@ -6,7 +6,21 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     base: '/Expense-Tracker/',
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'root-favicon-proxy',
+        configureServer(server) {
+          server.middlewares.use((req, _res, next) => {
+            if (req.url === '/favicon.ico' || req.url === '/favicon.png' || req.url === '/icon-192.png') {
+              req.url = `/Expense-Tracker${req.url}`;
+            }
+            next();
+          });
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
