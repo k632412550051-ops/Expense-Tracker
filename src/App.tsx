@@ -285,14 +285,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen liquid-glass-canvas font-sans text-slate-900 dark:text-slate-100 pb-20 relative overflow-x-hidden selection:bg-blue-600 selection:text-white dark:bg-slate-950 transition-colors duration-300">
-      {/* Dynamic ambient luminous backdrops */}
-      <div className="fixed top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-400/20 via-sky-300/15 to-transparent blur-3xl pointer-events-none -z-10 dark:opacity-20" />
-      <div className="fixed top-[45%] left-[-150px] w-[650px] h-[650px] rounded-full bg-gradient-to-tr from-cyan-400/15 via-blue-500/10 to-transparent blur-3xl pointer-events-none -z-10 dark:opacity-20" />
-      <div className="fixed bottom-[-100px] right-[20%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl pointer-events-none -z-10 dark:opacity-20" />
+    <div className="min-h-screen liquid-glass-canvas font-sans text-slate-900 dark:text-slate-100 pb-20 relative overflow-x-hidden selection:bg-blue-600 selection:text-white dark:bg-[#090e1a] transition-colors duration-300">
+      {/* Dynamic ambient luminous backdrops with vivid liquid glass refraction */}
+      <div className="fixed top-[-80px] right-[-80px] w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] rounded-full bg-gradient-to-br from-blue-400/25 via-sky-300/20 to-transparent dark:from-blue-600/40 dark:via-cyan-400/25 dark:to-transparent blur-[100px] pointer-events-none -z-10" />
+      <div className="fixed top-[40%] left-[-120px] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full bg-gradient-to-tr from-cyan-400/20 via-blue-500/15 to-transparent dark:from-indigo-500/35 dark:via-blue-600/25 dark:to-transparent blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed bottom-[-60px] right-[15%] w-[400px] sm:w-[550px] h-[400px] sm:h-[550px] rounded-full bg-indigo-500/15 dark:bg-sky-500/25 blur-[100px] pointer-events-none -z-10" />
 
       {/* Header */}
-      <header className="liquid-glass sticky top-0 z-30 border-b border-white/80 dark:border-white/10 shadow-md shadow-blue-950/5">
+      <header className="liquid-glass sticky top-0 z-30 border-b border-white/80 dark:border-white/15 shadow-md shadow-blue-950/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Crystal 3D Logo Badge */}
@@ -312,10 +312,10 @@ export default function App() {
             {/* Privacy Mode Quick Toggle */}
             <button
               onClick={() => handleUpdateSettings({ privacyMode: !settings.privacyMode })}
-              className={`liquid-glass-pill text-xs font-bold flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90 dark:hover:bg-slate-800 ${
+              className={`liquid-glass-pill text-xs font-bold flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90 dark:hover:bg-slate-800/90 ${
                 settings.privacyMode
                   ? 'text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700'
-                  : 'text-slate-600 dark:text-slate-400'
+                  : 'text-slate-600 dark:text-slate-300'
               }`}
               title={settings.privacyMode ? "Đang ẩn số dư — Bấm để hiện" : "Bấm để ẩn số dư (Chế độ riêng tư)"}
             >
@@ -363,10 +363,10 @@ export default function App() {
         
         {/* Month Selector Capsule */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white tracking-tight">
             Tổng quan tháng {currentMonth.split('-')[1]}/{currentMonth.split('-')[0]}
           </h2>
-          <div className="flex items-center gap-1.5 liquid-glass p-1 rounded-2xl border border-white/90 shadow-2xs self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 liquid-glass p-1 rounded-2xl border border-white/90 dark:border-white/15 shadow-2xs self-start sm:self-auto">
             <button
               onClick={() => {
                 let [y, m] = currentMonth.split('-').map(Number);
@@ -374,19 +374,19 @@ export default function App() {
                 if (m < 1) { m = 12; y -= 1; }
                 setCurrentMonth(`${y}-${m.toString().padStart(2, '0')}`);
               }}
-              className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-white/80 rounded-xl transition-all cursor-pointer"
+              className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
               title="Tháng trước"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-1.5 px-1.5">
-              <Calendar className="w-3.5 h-3.5 text-blue-600" />
+              <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
               <input 
                 id="month-selector"
                 type="month" 
                 value={currentMonth} 
                 onChange={(e) => setCurrentMonth(e.target.value)} 
-                className="px-2 py-1 bg-white/80 border border-white/90 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 transition-all cursor-pointer shadow-2xs"
+                className="px-2 py-1 bg-white/80 dark:bg-slate-900/80 border border-white/90 dark:border-white/15 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-800 dark:text-white transition-all cursor-pointer shadow-2xs"
               />
             </div>
             <button
@@ -396,7 +396,7 @@ export default function App() {
                 if (m > 12) { m = 1; y += 1; }
                 setCurrentMonth(`${y}-${m.toString().padStart(2, '0')}`);
               }}
-              className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-white/80 rounded-xl transition-all cursor-pointer"
+              className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
               title="Tháng sau"
             >
               <ChevronRight className="w-4 h-4" />
@@ -407,7 +407,7 @@ export default function App() {
         {/* Month Summary Cards (4 Liquid Glass Cards) - 2 columns on mobile, 4 columns on desktop */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-5 mb-8">
           {/* Card 1: Balance */}
-          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 flex flex-col justify-between relative overflow-hidden">
+          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
              <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
              <div className="flex items-center justify-between mb-2 sm:mb-3">
                <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Số dư</span>
@@ -426,43 +426,43 @@ export default function App() {
           </div>
 
           {/* Card 2: Total Income */}
-          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 flex flex-col justify-between relative overflow-hidden">
+          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng thu</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center text-emerald-600">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng thu</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <ArrowDownLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
             <div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900">
+              <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
                 {formatCurrency(totalIncome)}
               </p>
-              <p className="text-[10px] sm:text-[11px] text-emerald-600 font-semibold mt-0.5 truncate">
+              <p className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 truncate">
                 +{currentMonthIncomeList.length} khoản
               </p>
             </div>
           </div>
 
           {/* Card 3: Total Expense */}
-          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 flex flex-col justify-between relative overflow-hidden">
+          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Tổng chi</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-500/10 border border-rose-400/30 flex items-center justify-center text-rose-600">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng chi</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-600 dark:text-rose-400">
                 <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
             <div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900">
+              <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
                 {formatCurrency(totalSpent)}
               </p>
               {totalReimbursable > 0 ? (
-                <p className="text-[10px] sm:text-[11px] text-amber-600 font-semibold mt-0.5 truncate">
+                <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 truncate">
                   Chờ hoàn {formatCurrency(totalReimbursable)}
                 </p>
               ) : (
-                <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold mt-0.5 truncate">
+                <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5 truncate">
                   {currentMonthExpensesList.length} khoản
                 </p>
               )}
@@ -470,19 +470,19 @@ export default function App() {
           </div>
           
           {/* Card 4: Budget */}
-          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 flex flex-col justify-between relative overflow-hidden">
+          <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Hạn mức</span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-500/10 border border-indigo-400/30 flex items-center justify-center text-indigo-600">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hạn mức</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
             </div>
             <div>
-              <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900">
+              <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
                 {formatCurrency(totalBudget)}
               </p>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 font-semibold mt-0.5 truncate">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5 truncate">
                 {totalBudget > 0 ? `Đã dùng ${((totalSpent / totalBudget) * 100).toFixed(0)}%` : 'Chưa đặt'}
               </p>
             </div>
