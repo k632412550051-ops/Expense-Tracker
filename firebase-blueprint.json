@@ -1,0 +1,31 @@
+{
+  "users": {
+    "__UID__": {
+      "categories": [
+        "Ăn ngoài",
+        "Chi tiêu phát sinh",
+        "Đi lại",
+        "Chi tiêu bắt buộc",
+        "Social & Networking",
+        "Khác"
+      ],
+      "budgets": {
+        "Ăn ngoài": 2000000,
+        "Chi tiêu phát sinh": 500000,
+        "Đi lại": 1500000,
+        "Chi tiêu bắt buộc": 4000000,
+        "Social & Networking": 1000000,
+        "Khác": 500000
+      },
+      "expenses": {
+        "__EXPENSE_ID__": {
+          "amount": 150000,
+          "category": "Ăn ngoài",
+          "date": "2026-06-21",
+          "note": "Bữa tối",
+          "createdAt": "<SERVER_TIMESTAMP>"
+        }
+      }
+    }
+  }
+}

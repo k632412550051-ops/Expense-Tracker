@@ -1,0 +1,8 @@
+{
+  "name": "Expense Tracker",
+  "description": "An offline-first budget tracking application with monthly alerts and visual analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
