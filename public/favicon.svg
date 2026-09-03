@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="20" y1="12" x2="48" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <linearGradient id="glassGrad" x1="10" y1="24" x2="54" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#dbeafe" stop-opacity="0.8" />
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="30" y1="46" x2="54" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <filter id="dropGlow" x="0" y="0" width="64" height="64" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1e3a8a" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Base soft glow circle -->
+  <circle cx="32" cy="32" r="28" fill="#eff6ff" />
+  
+  <!-- Back Card (Cyan/Blue Glass) -->
+  <rect x="24" y="10" width="26" height="24" rx="4" fill="url(#cardGrad)" transform="rotate(8 37 22)" opacity="0.9" />
+  
+  <!-- Chart Card (White Frosted) -->
+  <rect x="15" y="12" width="22" height="22" rx="3.5" fill="#ffffff" filter="url(#dropGlow)" />
+  <!-- Mini Bar Chart -->
+  <rect x="18" y="24" width="3" height="7" rx="1.5" fill="#93c5fd" />
+  <rect x="23" y="19" width="3" height="12" rx="1.5" fill="#38bdf8" />
+  <rect x="28" y="16" width="3" height="15" rx="1.5" fill="#34d399" />
+
+  <!-- Wallet Body (Deep Blue 3D curved) -->
+  <path d="M12 26C12 21.5817 15.5817 18 20 18H44C48.4183 18 52 21.5817 52 26V44C52 48.4183 48.4183 52 44 52H20C15.5817 52 12 48.4183 12 44V26Z" fill="url(#bgGrad)" />
+
+  <!-- Front Wallet Flap (Frosted Liquid Glass) -->
+  <path d="M14 30C14 26.6863 16.6863 24 20 24H44C47.3137 24 50 26.6863 50 30V44C50 47.3137 47.3137 50 44 50H20C16.6863 50 14 47.3137 14 44V30Z" fill="url(#glassGrad)" />
+
+  <!-- Wallet Clasp/Strap (Cobalt Glass) -->
+  <path d="M38 32H48C49.6569 32 51 33.3431 51 35V39C51 40.6569 49.6569 42 48 42H38C36.3431 42 35 40.6569 35 39V35C35 33.3431 36.3431 32 38 32Z" fill="#1d4ed8" />
+  <circle cx="45" cy="37" r="2.5" fill="#ffffff" />
+
+  <!-- Growth Arrow (Cyan to Emerald Green Curve) -->
+  <path d="M26 47C32 46 40 43 46 36M46 36H39M46 36V43" stroke="url(#arrowGrad)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

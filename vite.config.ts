@@ -13,7 +13,13 @@ export default defineConfig(() => {
         name: 'root-favicon-proxy',
         configureServer(server) {
           server.middlewares.use((req, _res, next) => {
-            if (req.url === '/favicon.ico' || req.url === '/favicon.png' || req.url === '/icon-192.png') {
+            if (
+              req.url &&
+              (req.url.startsWith('/favicon') ||
+                req.url.startsWith('/icon-') ||
+                req.url.startsWith('/apple-touch-icon') ||
+                req.url === '/manifest.webmanifest')
+            ) {
               req.url = `/Expense-Tracker${req.url}`;
             }
             next();
