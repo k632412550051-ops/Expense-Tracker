@@ -94,6 +94,32 @@
   .liquid-crystal-sheen:hover::after {
     left: 140%;
   }
+
+  /* Dark Liquid Glass Mode */
+  .dark .liquid-glass {
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .dark .liquid-glass-elevated {
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.6),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .dark .liquid-glass-pill {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* Custom subtle scrollbar */

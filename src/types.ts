@@ -89,3 +89,35 @@ export const DEFAULT_BUDGETS: BudgetMap = {
   'Social & Networking': 2000000,
   'Khác': 1000000
 };
+
+export type CurrencyCode = 'VND' | 'USD' | 'EUR' | 'JPY' | 'GBP';
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+export interface AppSettings {
+  currency: CurrencyCode;
+  theme: ThemeMode;
+  privacyMode: boolean;
+}
+
+export interface CurrencyOption {
+  code: CurrencyCode;
+  symbol: string;
+  name: string;
+  flag: string;
+  locale: string;
+  fractionDigits: number;
+}
+
+export const CURRENCY_OPTIONS: CurrencyOption[] = [
+  { code: 'VND', symbol: '₫', name: 'Việt Nam Đồng', flag: '🇻🇳', locale: 'vi-VN', fractionDigits: 0 },
+  { code: 'USD', symbol: '$', name: 'Đô la Mỹ', flag: '🇺🇸', locale: 'en-US', fractionDigits: 2 },
+  { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺', locale: 'de-DE', fractionDigits: 2 },
+  { code: 'JPY', symbol: '¥', name: 'Yên Nhật', flag: '🇯🇵', locale: 'ja-JP', fractionDigits: 0 },
+  { code: 'GBP', symbol: '£', name: 'Bảng Anh', flag: '🇬🇧', locale: 'en-GB', fractionDigits: 2 },
+];
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  currency: 'VND',
+  theme: 'system',
+  privacyMode: false,
+};

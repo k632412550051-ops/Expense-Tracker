@@ -1,15 +1,30 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useFirebaseData } from './hooks/useFirebaseData';
 import { loginWithGoogle, logout } from './lib/firebase';
-import { Expense } from './types';
+import { Expense, AppSettings, DEFAULT_SETTINGS } from './types';
 import { ExpenseForm } from './components/ExpenseForm';
 import { CombinedPieChartWidget } from './components/CombinedPieChartWidget';
 import { BarChartWidget } from './components/BarChartWidget';
 import { BudgetAlertsWidget } from './components/BudgetAlertsWidget';
 import { BudgetSettingsModal } from './components/BudgetSettingsModal';
+import { SettingsModal } from './components/SettingsModal';
 import { TransactionHistory } from './components/TransactionHistory';
-import { Wallet, Target, Receipt, BarChart3, LogOut, ArrowUpRight, ArrowDownLeft, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatCurrency } from './lib/utils';
+import { 
+  Wallet, 
+  Target, 
+  Receipt, 
+  BarChart3, 
+  LogOut, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Calendar, 
+  ChevronLeft, 
+  ChevronRight,
+  Settings as SettingsIcon,
+  Eye,
+  EyeOff
+} from 'lucide-react';
+import { formatCurrency, setGlobalCurrency, setGlobalPrivacyMode } from './lib/utils';
 
 export default function App() {
   const { 
@@ -27,6 +42,54 @@ export default function App() {
     updateExpensesCategory 
   } = useFirebaseData();
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // App Settings (Currency, Theme, Privacy Mode)
+  const [settings, setSettings] = useState<AppSettings>(() => {
+    try {
+      const saved = localStorage.getItem('expense_tracker_settings');
+      if (saved) {
+        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      }
+    } catch (e) {
+      console.error("Failed to parse settings:", e);
+    }
+    return DEFAULT_SETTINGS;
+  });
+
+  // Sync settings with global utils, localStorage & dark mode
+  useEffect(() => {
+    setGlobalCurrency(settings.currency);
+    setGlobalPrivacyMode(settings.privacyMode);
+    try {
+      localStorage.setItem('expense_tracker_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.error("Failed to save settings:", e);
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyTheme = () => {
+      const isDark =
+        settings.theme === 'dark' ||
+        (settings.theme === 'system' && mediaQuery.matches);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+    applyTheme();
+
+    if (settings.theme === 'system') {
+      mediaQuery.addEventListener('change', applyTheme);
+      return () => mediaQuery.removeEventListener('change', applyTheme);
+    }
+  }, [settings]);
+
+  const handleUpdateSettings = (partial: Partial<AppSettings>) => {
+    setSettings(prev => ({ ...prev, ...partial }));
+    showNotification('Đã cập nhật cài đặt');
+  };
   
   const getLocalMonthString = () => {
     const tzoffset = (new Date()).getTimezoneOffset() * 60000;
@@ -222,14 +285,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen liquid-glass-canvas font-sans text-slate-900 pb-20 relative overflow-x-hidden selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen liquid-glass-canvas font-sans text-slate-900 dark:text-slate-100 pb-20 relative overflow-x-hidden selection:bg-blue-600 selection:text-white dark:bg-slate-950 transition-colors duration-300">
       {/* Dynamic ambient luminous backdrops */}
-      <div className="fixed top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-400/20 via-sky-300/15 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="fixed top-[45%] left-[-150px] w-[650px] h-[650px] rounded-full bg-gradient-to-tr from-cyan-400/15 via-blue-500/10 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="fixed bottom-[-100px] right-[20%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
+      <div className="fixed top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-400/20 via-sky-300/15 to-transparent blur-3xl pointer-events-none -z-10 dark:opacity-20" />
+      <div className="fixed top-[45%] left-[-150px] w-[650px] h-[650px] rounded-full bg-gradient-to-tr from-cyan-400/15 via-blue-500/10 to-transparent blur-3xl pointer-events-none -z-10 dark:opacity-20" />
+      <div className="fixed bottom-[-100px] right-[20%] w-[500px] h-[500px] rounded-full bg-indigo-500/10 blur-3xl pointer-events-none -z-10 dark:opacity-20" />
 
       {/* Header */}
-      <header className="liquid-glass sticky top-0 z-30 border-b border-white/80 shadow-md shadow-blue-950/5">
+      <header className="liquid-glass sticky top-0 z-30 border-b border-white/80 dark:border-white/10 shadow-md shadow-blue-950/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Crystal 3D Logo Badge */}
@@ -238,25 +301,59 @@ export default function App() {
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-xs" />
               </div>
             </div>
-            <h1 className="text-base sm:text-xl font-black font-heading tracking-tight text-slate-900">
-              Expense Tracker
-            </h1>
+            <div>
+              <h1 className="text-base sm:text-xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
+                Expense Tracker
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {user.email && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/60 border border-white/80 text-xs font-semibold text-slate-600 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200"></span>
-                <span className="truncate max-w-[180px]">{user.email}</span>
-              </div>
-            )}
-            <button 
-               onClick={logout}
-               className="liquid-glass-pill text-slate-600 hover:text-slate-900 text-xs sm:text-sm font-bold flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90"
-               title="Đăng xuất khỏi tài khoản"
+            {/* Privacy Mode Quick Toggle */}
+            <button
+              onClick={() => handleUpdateSettings({ privacyMode: !settings.privacyMode })}
+              className={`liquid-glass-pill text-xs font-bold flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90 dark:hover:bg-slate-800 ${
+                settings.privacyMode
+                  ? 'text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700'
+                  : 'text-slate-600 dark:text-slate-400'
+              }`}
+              title={settings.privacyMode ? "Đang ẩn số dư — Bấm để hiện" : "Bấm để ẩn số dư (Chế độ riêng tư)"}
             >
-               <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-               <span className="hidden sm:inline">Đăng xuất</span>
+              {settings.privacyMode ? (
+                <>
+                  <EyeOff className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="hidden sm:inline">Ẩn số dư</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Hiện số dư</span>
+                </>
+              )}
+            </button>
+
+            {/* Fintech Settings Trigger */}
+            <button
+              id="settings-trigger-btn"
+              onClick={() => setIsSettingsOpen(true)}
+              className="liquid-glass-pill text-xs font-bold flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white/90 dark:border-white/10 group"
+              title="Mở Cài đặt (Tài khoản, Tiền tệ, Giao diện)"
+            >
+              {user.photoURL ? (
+                <img 
+                  src={user.photoURL} 
+                  alt="Avatar" 
+                  className="w-5 h-5 rounded-full object-cover ring-1 ring-white dark:ring-slate-700" 
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
+                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
+                </div>
+              )}
+              <span className="hidden md:inline font-semibold text-slate-700 dark:text-slate-300">
+                {settings.currency}
+              </span>
+              <SettingsIcon className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 group-hover:rotate-45 transition-all" />
             </button>
           </div>
         </div>
@@ -456,6 +553,16 @@ export default function App() {
       </main>
 
       {/* Modals */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={settings}
+        onUpdateSettings={handleUpdateSettings}
+        user={user}
+        onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
+        onLogout={logout}
+      />
+
       {isBudgetModalOpen && (
         <BudgetSettingsModal
           budgets={budgets}
