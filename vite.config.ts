@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/expensetracker/',
+    base: '/Expense-Tracker/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
