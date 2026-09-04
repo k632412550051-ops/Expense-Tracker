@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useFirebaseData } from './hooks/useFirebaseData';
 import { loginWithGoogle, logout } from './lib/firebase';
-import { Expense, AppSettings, DEFAULT_SETTINGS } from './types';
+import { Expense, AppSettings, DEFAULT_SETTINGS, PersonaType, CurrencyCode } from './types';
 import { ExpenseForm } from './components/ExpenseForm';
 import { CombinedPieChartWidget } from './components/CombinedPieChartWidget';
 import { BarChartWidget } from './components/BarChartWidget';
@@ -9,6 +9,8 @@ import { BudgetAlertsWidget } from './components/BudgetAlertsWidget';
 import { BudgetSettingsModal } from './components/BudgetSettingsModal';
 import { SettingsModal } from './components/SettingsModal';
 import { TransactionHistory } from './components/TransactionHistory';
+import { OnboardingModal } from './components/OnboardingModal';
+import { getExpenseConvertedAmount } from './lib/exchangeRates';
 import { 
   Wallet, 
   Target, 
@@ -22,7 +24,9 @@ import {
   ChevronRight,
   Settings as SettingsIcon,
   Eye,
-  EyeOff
+  EyeOff,
+  Sparkles,
+  Plane
 } from 'lucide-react';
 import { formatCurrency, setGlobalCurrency, setGlobalPrivacyMode } from './lib/utils';
 
@@ -30,6 +34,7 @@ export default function App() {
   const { 
     user, 
     loading, 
+    userProfile,
     categories, 
     incomeCategories, 
     categoryColors, 
@@ -39,10 +44,12 @@ export default function App() {
     deleteExpense, 
     updateExpense, 
     updateUserSettings, 
-    updateExpensesCategory 
+    updateExpensesCategory,
+    updateUserProfile
   } = useFirebaseData();
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
 
   // App Settings (Currency, Theme, Privacy Mode)
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -89,6 +96,35 @@ export default function App() {
     }
   }, [settings]);
 
+  // Sync with pending onboarding data or Firestore profile baseCurrency
+  useEffect(() => {
+    if (user) {
+      const pendingStr = localStorage.getItem('pending_onboarding_data');
+      if (pendingStr) {
+        try {
+          const pendingData = JSON.parse(pendingStr);
+          updateUserProfile({
+            displayName: pendingData.displayName || user.displayName || 'Bạn',
+            persona: pendingData.persona || 'student',
+            baseCurrency: pendingData.baseCurrency || 'VND',
+            frequentCurrencies: pendingData.frequentCurrencies || ['VND', 'USD'],
+            onboarded: true
+          });
+          if (pendingData.baseCurrency) {
+            handleUpdateSettings({ currency: pendingData.baseCurrency });
+          }
+          localStorage.removeItem('pending_onboarding_data');
+          setIsOnboardingOpen(false);
+          showNotification(`Chào mừng ${pendingData.displayName || 'bạn'} đến với Expense Tracker!`);
+        } catch (e) {
+          console.error("Failed to parse pending onboarding data:", e);
+        }
+      } else if (userProfile?.baseCurrency && userProfile.baseCurrency !== settings.currency) {
+        handleUpdateSettings({ currency: userProfile.baseCurrency });
+      }
+    }
+  }, [user, userProfile?.baseCurrency]);
+
   const handleUpdateSettings = (partial: Partial<AppSettings>) => {
     // 1. Immediately & synchronously update module globals BEFORE state commit
     if (partial.currency !== undefined) {
@@ -118,6 +154,42 @@ export default function App() {
       );
     } else {
       showNotification('Đã cập nhật cài đặt');
+    }
+  };
+
+  const handleOnboardingComplete = async (data: {
+    displayName: string;
+    persona: PersonaType;
+    baseCurrency: CurrencyCode;
+    frequentCurrencies: CurrencyCode[];
+    monthlyBudget: number;
+  }) => {
+    try {
+      localStorage.setItem('pending_onboarding_data', JSON.stringify(data));
+    } catch (e) {
+      console.error("Failed to cache onboarding data:", e);
+    }
+
+    handleUpdateSettings({ currency: data.baseCurrency });
+
+    if (user) {
+      await updateUserProfile({
+        displayName: data.displayName,
+        persona: data.persona,
+        baseCurrency: data.baseCurrency,
+        frequentCurrencies: data.frequentCurrencies,
+        onboarded: true
+      });
+      if (data.monthlyBudget && categories.length > 0) {
+        const perCat = Math.round(data.monthlyBudget / categories.length);
+        const newBudgets: Record<string, number> = {};
+        categories.forEach(cat => {
+          newBudgets[cat] = perCat;
+        });
+        await updateUserSettings(newBudgets, categories, incomeCategories, categoryColors);
+      }
+      setIsOnboardingOpen(false);
+      showNotification(`Đã cập nhật hồ sơ của ${data.displayName}!`);
     }
   };
   
@@ -233,16 +305,18 @@ export default function App() {
   }, [previousMonthTransactions]);
 
   const totalSpent = useMemo(() => {
-    return currentMonthExpensesList.reduce((sum, exp) => sum + exp.amount, 0);
-  }, [currentMonthExpensesList]);
+    return currentMonthExpensesList.reduce((sum, exp) => sum + getExpenseConvertedAmount(exp, settings.currency), 0);
+  }, [currentMonthExpensesList, settings.currency]);
 
   const totalReimbursable = useMemo(() => {
-    return currentMonthExpensesList.filter(exp => exp.isReimbursable).reduce((sum, exp) => sum + exp.amount, 0);
-  }, [currentMonthExpensesList]);
+    return currentMonthExpensesList
+      .filter(exp => exp.isReimbursable)
+      .reduce((sum, exp) => sum + getExpenseConvertedAmount(exp, settings.currency), 0);
+  }, [currentMonthExpensesList, settings.currency]);
 
   const totalIncome = useMemo(() => {
-    return currentMonthIncomeList.reduce((sum, exp) => sum + exp.amount, 0);
-  }, [currentMonthIncomeList]);
+    return currentMonthIncomeList.reduce((sum, exp) => sum + getExpenseConvertedAmount(exp, settings.currency), 0);
+  }, [currentMonthIncomeList, settings.currency]);
 
   const balance = totalIncome - totalSpent;
   
@@ -274,42 +348,63 @@ export default function App() {
                   <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95 pointer-events-none" />
 
                   {/* 3D Glass Emblem */}
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-700 p-0.5 shadow-xl shadow-blue-500/30 flex items-center justify-center mb-6 relative group">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-700 p-0.5 shadow-xl shadow-blue-500/30 flex items-center justify-center mb-5 relative group">
                     <div className="w-full h-full rounded-2xl bg-gradient-to-br from-white/30 to-white/5 backdrop-blur-sm flex items-center justify-center border border-white/40">
                       <Wallet className="w-9 h-9 text-white drop-shadow-md" />
                     </div>
                   </div>
 
-                  <h1 className="text-3xl font-black font-heading text-slate-900 mb-2 tracking-tight">Expense Tracker</h1>
-                  <p className="text-slate-500 text-sm mb-8 font-medium leading-relaxed">
-                    Hệ thống quản lý tài chính thông minh, bảo mật & trực quan với phong cách Liquid Glass 3D.
+                  <h1 className="text-3xl font-black font-heading text-slate-900 dark:text-white mb-2 tracking-tight">Expense Tracker</h1>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 font-medium leading-relaxed">
+                    Hệ thống quản lý tài chính thông minh, bảo mật & trực quan với phong cách Liquid Glass 3D, hỗ trợ đa tiền tệ (USD, VND, EUR...).
                   </p>
                   
                   {authError && (
-                    <div className="w-full mb-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-300 text-rose-800 text-xs text-left leading-relaxed">
+                    <div className="w-full mb-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-300 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 text-xs text-left leading-relaxed">
                       <p className="font-bold mb-1">Lỗi đăng nhập:</p>
                       <p>{authError}</p>
                     </div>
                   )}
 
+                  {/* Primary Call to Action: 4-Step Onboarding */}
+                  <button 
+                     onClick={() => setIsOnboardingOpen(true)}
+                     className="w-full mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3.5 px-6 rounded-2xl font-bold shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
+                  >
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                      <span>Bắt đầu thiết lập cá nhân hóa</span>
+                  </button>
+
+                  {/* Direct Google Login for returning users */}
                   <button 
                      onClick={handleGoogleLogin}
                      disabled={isLoggingIn}
-                     className="w-full liquid-glass-pill hover:bg-white text-slate-800 py-3.5 px-6 rounded-2xl font-bold shadow-md shadow-blue-900/5 hover:shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer border border-white/90 group disabled:opacity-70 disabled:cursor-not-allowed"
+                     className="w-full liquid-glass-pill hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-white py-3 px-6 rounded-2xl font-semibold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-3 cursor-pointer border border-white/90 dark:border-white/15 group disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                       {isLoggingIn ? (
-                        <div className="w-5 h-5 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+                        <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
                       ) : (
-                        <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                         </svg>
                       )}
-                      <span>{isLoggingIn ? 'Đang xác thực...' : 'Đăng nhập với Google'}</span>
+                      <span>{isLoggingIn ? 'Đang xác thực...' : 'Đã có tài khoản? Đăng nhập ngay'}</span>
                   </button>
               </div>
+
+              {/* Onboarding Modal Overlay */}
+              <OnboardingModal
+                isOpen={isOnboardingOpen}
+                onClose={() => setIsOnboardingOpen(false)}
+                onComplete={handleOnboardingComplete}
+                onGoogleSignIn={handleGoogleLogin}
+                isLoggingIn={isLoggingIn}
+                authError={authError}
+                initialBaseCurrency={settings.currency}
+              />
           </div>
       );
   }
@@ -534,13 +629,15 @@ export default function App() {
             onAddExpense={handleAddExpense} 
             categories={categories} 
             incomeCategories={incomeCategories} 
-            recentTransactions={expenses} 
+            recentTransactions={expenses}
+            baseCurrency={settings.currency}
           />
           <BudgetAlertsWidget 
             expenses={currentMonthExpensesList} 
             budgets={budgets} 
             categories={categories}
             categoryColors={categoryColors}
+            baseCurrency={settings.currency}
             onEditClick={() => setIsBudgetModalOpen(true)} 
           />
         </div>
@@ -554,6 +651,7 @@ export default function App() {
             categories={categories}
             incomeCategories={incomeCategories}
             categoryColors={categoryColors}
+            baseCurrency={settings.currency}
             onToggleResolved={handleToggleResolved}
             onDeleteExpense={handleRemoveExpense}
           />
@@ -567,7 +665,7 @@ export default function App() {
                 <BarChart3 className="w-5 h-5 text-white" />
               </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white tracking-tight">
               Phân tích chi tiêu
             </h2>
           </div>
@@ -579,12 +677,14 @@ export default function App() {
               currentMonthLabel={currentMonth.split('-')[1]}
               previousMonthLabel={previousMonth.split('-')[1]}
               categoryColors={categoryColors}
+              baseCurrency={settings.currency}
             />
             <BarChartWidget 
                currentMonthKey={currentMonth}
                expenses={expenses.filter(e => 
                  (e.type === 'expense' || !e.type) && !e.isResolved
                )} 
+               baseCurrency={settings.currency}
             />
           </div>
         </section>
@@ -598,8 +698,21 @@ export default function App() {
         settings={settings}
         onUpdateSettings={handleUpdateSettings}
         user={user}
+        userProfile={userProfile}
+        onUpdateProfile={updateUserProfile}
         onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
         onLogout={logout}
+      />
+
+      {/* Onboarding for Authenticated User if not yet onboarded */}
+      <OnboardingModal
+        isOpen={isOnboardingOpen || Boolean(userProfile && !userProfile.onboarded)}
+        onClose={() => setIsOnboardingOpen(false)}
+        onComplete={handleOnboardingComplete}
+        onGoogleSignIn={handleGoogleLogin}
+        isLoggingIn={isLoggingIn}
+        authError={authError}
+        initialBaseCurrency={settings.currency}
       />
 
       {isBudgetModalOpen && (
@@ -628,16 +741,16 @@ export default function App() {
 
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
-          <div className="liquid-glass-elevated rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-white relative overflow-hidden">
+          <div className="liquid-glass-elevated rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-white dark:border-white/15 dark:bg-slate-900/90 relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
-            <h3 className="text-lg font-extrabold font-heading text-slate-900 mb-2">Xác nhận xóa</h3>
-            <p className="text-slate-600 text-xs sm:text-sm mb-6 font-medium leading-relaxed">
+            <h3 className="text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-2">Xác nhận xóa</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mb-6 font-medium leading-relaxed">
               Bạn có chắc chắn muốn xóa giao dịch này? Hành động này không thể hoàn tác.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-600 hover:bg-white/80 rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
               >
                 Hủy
               </button>
@@ -654,7 +767,7 @@ export default function App() {
 
       {/* Toast Notification */}
       {notification && (
-        <div className={`fixed bottom-5 right-5 px-5 py-3 rounded-2xl shadow-xl border backdrop-blur-xl ${notification.type === 'success' ? 'bg-white/90 border-emerald-200/80 text-emerald-900 shadow-emerald-500/10' : 'bg-white/90 border-rose-200/80 text-rose-900 shadow-rose-500/10'} transition-all z-50 animate-in slide-in-from-bottom-3 duration-300`}>
+        <div className={`fixed bottom-5 right-5 px-5 py-3 rounded-2xl shadow-xl border backdrop-blur-xl ${notification.type === 'success' ? 'bg-white/90 dark:bg-slate-900/90 border-emerald-200/80 dark:border-emerald-900/50 text-emerald-900 dark:text-emerald-300 shadow-emerald-500/10' : 'bg-white/90 dark:bg-slate-900/90 border-rose-200/80 dark:border-rose-900/50 text-rose-900 dark:text-rose-300 shadow-rose-500/10'} transition-all z-50 animate-in slide-in-from-bottom-3 duration-300`}>
           <div className="flex items-center gap-2.5">
             <span className={`w-2.5 h-2.5 rounded-full ${notification.type === 'success' ? 'bg-emerald-500 shadow-xs shadow-emerald-400' : 'bg-rose-500 shadow-xs shadow-rose-400'}`}></span>
             <p className="font-bold text-xs sm:text-sm">{notification.message}</p>

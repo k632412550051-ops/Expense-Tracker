@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Category, Expense } from '../types';
-import { PlusCircle } from 'lucide-react';
+import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS } from '../types';
+import { PlusCircle, Check } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface ExpenseFormProps {
@@ -9,11 +9,19 @@ interface ExpenseFormProps {
   categories: Category[];
   incomeCategories?: Category[];
   recentTransactions?: Expense[];
+  baseCurrency?: CurrencyCode;
 }
 
-export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], recentTransactions = [] }: ExpenseFormProps) {
+export function ExpenseForm({ 
+  onAddExpense, 
+  categories, 
+  incomeCategories = [], 
+  recentTransactions = [],
+  baseCurrency = 'VND',
+}: ExpenseFormProps) {
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState<string>('');
+
   const currentCategories = type === 'income' && incomeCategories?.length > 0 ? incomeCategories : categories;
   const [category, setCategory] = useState<Category>(currentCategories[0] || '');
   const getLocalDateString = () => {
@@ -52,9 +60,13 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
     e.preventDefault();
     if (!amount || isNaN(Number(amount))) return;
 
+    const numAmount = Number(amount);
+
     try {
       await onAddExpense({
-        amount: Number(amount),
+        amount: numAmount,
+        currency: baseCurrency,
+        convertedAmount: numAmount,
         category,
         date,
         note,
@@ -69,6 +81,8 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
       console.error(error);
     }
   };
+
+  const currencySymbol = CURRENCY_OPTIONS.find(c => c.code === baseCurrency)?.symbol || (baseCurrency === 'VND' ? '₫' : '$');
 
   return (
     <motion.form 
@@ -133,18 +147,29 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+        {/* Amount Input */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Số tiền</label>
-          <input
-            type="number"
-            required
-            min="0"
-            step="1"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all shadow-inner shadow-blue-900/5 text-sm font-semibold"
-            placeholder="0 đ"
-          />
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
+              Số tiền ({baseCurrency})
+            </label>
+          </div>
+
+          <div className="relative">
+            <input
+              type="number"
+              required
+              min="0"
+              step={baseCurrency === 'VND' || baseCurrency === 'JPY' || baseCurrency === 'KRW' ? "1" : "0.01"}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all shadow-inner shadow-blue-900/5 text-sm font-semibold pr-10"
+              placeholder={`0 ${currencySymbol}`}
+            />
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600 dark:text-slate-300 pointer-events-none">
+              {currencySymbol}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -193,7 +218,7 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all text-sm shadow-inner shadow-blue-900/5"
-            placeholder="Ví dụ: Cà phê sáng, ăn trưa"
+            placeholder="Ví dụ: Cà phê sáng, ăn trưa, vé máy bay"
           />
           {showSuggestions && filteredNotes.length > 0 && (
             <div className="absolute top-full mt-1.5 w-full liquid-glass-elevated border border-white/90 dark:border-white/15 rounded-2xl shadow-xl z-20 max-h-40 overflow-y-auto p-1">

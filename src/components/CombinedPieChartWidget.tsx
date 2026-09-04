@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Expense, getCategoryColor } from '../types';
+import { Expense, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
+import { getExpenseConvertedAmount } from '../lib/exchangeRates';
 import { PieChart as PieIcon } from 'lucide-react';
 
 interface CombinedPieChartWidgetProps {
@@ -10,6 +11,7 @@ interface CombinedPieChartWidgetProps {
   currentMonthLabel: string;
   previousMonthLabel: string;
   categoryColors?: Record<string, string>;
+  baseCurrency?: CurrencyCode;
 }
 
 export function CombinedPieChartWidget({
@@ -17,7 +19,8 @@ export function CombinedPieChartWidget({
   previousMonthExpenses,
   currentMonthLabel,
   previousMonthLabel,
-  categoryColors
+  categoryColors,
+  baseCurrency = 'VND'
 }: CombinedPieChartWidgetProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'previous'>('current');
 
@@ -29,8 +32,9 @@ export function CombinedPieChartWidget({
     let total = 0;
 
     activeExpenses.forEach(exp => {
-      sums[exp.category] = (sums[exp.category] || 0) + exp.amount;
-      total += exp.amount;
+      const converted = getExpenseConvertedAmount(exp, baseCurrency);
+      sums[exp.category] = (sums[exp.category] || 0) + converted;
+      total += converted;
     });
 
     const chartData = Object.keys(sums).map((category) => ({
@@ -43,7 +47,7 @@ export function CombinedPieChartWidget({
     chartData.sort((a, b) => b.value - a.value);
 
     return { data: chartData, totalAmount: total };
-  }, [activeExpenses, categoryColors]);
+  }, [activeExpenses, categoryColors, baseCurrency]);
 
   return (
     <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[420px] overflow-hidden">
@@ -62,7 +66,7 @@ export function CombinedPieChartWidget({
             </h2>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Tổng chi: <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totalAmount)}</span>
+            Tổng chi: <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totalAmount, baseCurrency)}</span>
           </p>
         </div>
 
@@ -138,7 +142,7 @@ export function CombinedPieChartWidget({
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value), 'Đã chi']}
+                  formatter={(value: number) => [formatCurrency(value, baseCurrency), 'Đã chi']}
                   contentStyle={{ 
                     borderRadius: '16px', 
                     background: 'rgba(15, 23, 42, 0.85)', 

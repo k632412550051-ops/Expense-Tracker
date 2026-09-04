@@ -1,14 +1,16 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Expense } from '../types';
+import { Expense, CurrencyCode } from '../types';
 import { formatCurrency } from '../lib/utils';
+import { getExpenseConvertedAmount } from '../lib/exchangeRates';
 
 interface BarChartWidgetProps {
   expenses: Expense[];
   currentMonthKey?: string;
+  baseCurrency?: CurrencyCode;
 }
 
-export function BarChartWidget({ expenses, currentMonthKey }: BarChartWidgetProps) {
+export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND' }: BarChartWidgetProps) {
   const data = useMemo(() => {
     const result = [];
     let currentYear, currentMonthIdx;
@@ -37,15 +39,16 @@ export function BarChartWidget({ expenses, currentMonthKey }: BarChartWidgetProp
     }
 
     expenses.forEach(exp => {
+      if (exp.type === 'income') return; // only chart expenses
       const monthKey = exp.date.slice(0, 7); // 'YYYY-MM'
       const monthData = result.find(r => r.monthKey === monthKey);
       if (monthData) {
-        monthData.total += exp.amount;
+        monthData.total += getExpenseConvertedAmount(exp, baseCurrency);
       }
     });
 
     return result;
-  }, [expenses, currentMonthKey]);
+  }, [expenses, currentMonthKey, baseCurrency]);
 
   return (
     <div className="liquid-glass rounded-3xl p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col h-[400px] overflow-hidden">
@@ -70,14 +73,23 @@ export function BarChartWidget({ expenses, currentMonthKey }: BarChartWidgetProp
               dy={10}
             />
             <YAxis 
-              tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1).replace('.0', '')}tr` : `${(value / 1000).toFixed(0)}k`}
+              tickFormatter={(value) => {
+                if (baseCurrency === 'VND') {
+                  return value >= 1000000 
+                    ? `${(value / 1000000).toFixed(1).replace('.0', '')}tr` 
+                    : `${(value / 1000).toFixed(0)}k`;
+                }
+                return value >= 1000 
+                  ? `${(value / 1000).toFixed(1).replace('.0', '')}k` 
+                  : `${value}`;
+              }}
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }}
             />
             <Tooltip 
               cursor={{ fill: 'rgba(56, 189, 248, 0.08)' }}
-              formatter={(value: number) => [formatCurrency(value), 'Tổng chi']}
+              formatter={(value: number) => [formatCurrency(value, baseCurrency), 'Tổng chi']}
               labelStyle={{ color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' }}
               itemStyle={{ color: '#f8fafc' }}
               contentStyle={{ 

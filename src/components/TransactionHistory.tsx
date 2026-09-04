@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Expense, Category, getCategoryColor } from '../types';
+import { Expense, Category, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, formatCompactCurrency, cn } from '../lib/utils';
+import { getExpenseConvertedAmount } from '../lib/exchangeRates';
 import { 
   Calendar as CalendarIcon, 
   List, 
@@ -28,6 +29,7 @@ interface TransactionHistoryProps {
   categoryColors?: Record<string, string>;
   onToggleResolved: (expense: Expense) => void;
   onDeleteExpense: (id: string) => void;
+  baseCurrency?: CurrencyCode;
 }
 
 export function TransactionHistory({
@@ -38,7 +40,8 @@ export function TransactionHistory({
   incomeCategories,
   categoryColors,
   onToggleResolved,
-  onDeleteExpense
+  onDeleteExpense,
+  baseCurrency = 'VND'
 }: TransactionHistoryProps) {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [filterCategory, setFilterCategory] = useState<string>('Tất cả');
@@ -173,14 +176,15 @@ export function TransactionHistory({
     let income = 0;
     let expense = 0;
     selectedDayTransactions.forEach(t => {
+      const converted = getExpenseConvertedAmount(t, baseCurrency);
       if (t.type === 'income') {
-        income += t.amount;
+        income += converted;
       } else if (!t.isResolved) {
-        expense += t.amount;
+        expense += converted;
       }
     });
     return { income, expense, balance: income - expense };
-  }, [selectedDayTransactions]);
+  }, [selectedDayTransactions, baseCurrency]);
 
   const weekDayHeaders = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
@@ -406,13 +410,13 @@ export function TransactionHistory({
                 const isToday = cell.dateStr === todayDateStr;
                 const isSelected = cell.dateStr === selectedDayDate;
 
-                // Day totals
+                // Day totals in base currency
                 const dayExpense = dayTransactions
                   .filter(e => e.type !== 'income' && !e.isResolved)
-                  .reduce((sum, e) => sum + e.amount, 0);
+                  .reduce((sum, e) => sum + getExpenseConvertedAmount(e, baseCurrency), 0);
                 const dayIncome = dayTransactions
                   .filter(e => e.type === 'income')
-                  .reduce((sum, e) => sum + e.amount, 0);
+                  .reduce((sum, e) => sum + getExpenseConvertedAmount(e, baseCurrency), 0);
 
                 return (
                   <div
@@ -479,7 +483,7 @@ export function TransactionHistory({
                               borderLeftWidth: '3px',
                               borderLeftColor: catColor,
                             }}
-                            title={`${exp.category}: ${formatCurrency(exp.amount)}${exp.note ? ` (${exp.note})` : ''}`}
+                            title={`${exp.category}: ${formatCurrency(exp.amount, exp.currency || baseCurrency)}${exp.currency && exp.currency !== baseCurrency ? ` (≈ ${formatCurrency(getExpenseConvertedAmount(exp, baseCurrency), baseCurrency)})` : ''}${exp.note ? ` (${exp.note})` : ''}`}
                           >
                             <span className="truncate max-w-[85px] sm:max-w-[100px] text-slate-800 dark:text-slate-100">
                               {exp.note ? exp.note : exp.category}
@@ -488,7 +492,7 @@ export function TransactionHistory({
                               className="font-extrabold shrink-0 text-[10px]"
                               style={{ color: isIncome ? '#10b981' : catColor }}
                             >
-                              {isIncome ? '+' : ''}{formatCompactCurrency(exp.amount)}
+                              {isIncome ? '+' : ''}{formatCompactCurrency(getExpenseConvertedAmount(exp, baseCurrency), baseCurrency)}
                             </span>
                           </div>
                         );
@@ -606,12 +610,19 @@ export function TransactionHistory({
                         </div>
 
                         <div className="flex items-center gap-4 shrink-0">
-                          <span className={cn(
-                            "font-extrabold text-base tracking-tight",
-                            isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-slate-900 dark:text-white"
-                          )}>
-                            {isIncome ? '+' : '-'}{formatCurrency(exp.amount)}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className={cn(
+                              "font-extrabold text-base tracking-tight",
+                              isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-slate-900 dark:text-white"
+                            )}>
+                              {isIncome ? '+' : '-'}{formatCurrency(exp.amount, exp.currency || baseCurrency)}
+                            </span>
+                            {exp.currency && exp.currency !== baseCurrency && (
+                              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-0.5">
+                                ≈ {formatCurrency(getExpenseConvertedAmount(exp, baseCurrency), baseCurrency)}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                             {exp.isReimbursable && (
                               <button
@@ -788,12 +799,19 @@ export function TransactionHistory({
                             </div>
 
                             <div className="flex flex-col items-end gap-2 shrink-0">
-                              <span className={cn(
-                                "font-extrabold text-base",
-                                isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-slate-900 dark:text-white"
-                              )}>
-                                {isIncome ? '+' : '-'}{formatCurrency(exp.amount)}
-                              </span>
+                              <div className="flex flex-col items-end">
+                                <span className={cn(
+                                  "font-extrabold text-base",
+                                  isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-slate-900 dark:text-white"
+                                )}>
+                                  {isIncome ? '+' : '-'}{formatCurrency(exp.amount, exp.currency || baseCurrency)}
+                                </span>
+                                {exp.currency && exp.currency !== baseCurrency && (
+                                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                                    ≈ {formatCurrency(getExpenseConvertedAmount(exp, baseCurrency), baseCurrency)}
+                                  </span>
+                                )}
+                              </div>
                               <button
                                 onClick={() => {
                                   onDeleteExpense(exp.id);

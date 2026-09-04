@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Expense, BudgetMap, Category, getCategoryColor } from '../types';
+import { Expense, BudgetMap, Category, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
+import { getExpenseConvertedAmount } from '../lib/exchangeRates';
 import { AlertTriangle, Edit2 } from 'lucide-react';
 
 interface BudgetAlertsWidgetProps {
@@ -9,19 +10,20 @@ interface BudgetAlertsWidgetProps {
   categories: Category[];
   categoryColors?: Record<string, string>;
   onEditClick?: () => void;
+  baseCurrency?: CurrencyCode;
 }
 
-export function BudgetAlertsWidget({ expenses, budgets, categories, categoryColors, onEditClick }: BudgetAlertsWidgetProps) {
+export function BudgetAlertsWidget({ expenses, budgets, categories, categoryColors, onEditClick, baseCurrency = 'VND' }: BudgetAlertsWidgetProps) {
   const spendingByCategory = useMemo(() => {
     const sums: Record<Category, number> = {};
     categories.forEach(c => sums[c] = 0);
 
     expenses.forEach(exp => {
-      sums[exp.category] = (sums[exp.category] || 0) + exp.amount;
+      sums[exp.category] = (sums[exp.category] || 0) + getExpenseConvertedAmount(exp, baseCurrency);
     });
 
     return sums;
-  }, [expenses, categories]);
+  }, [expenses, categories, baseCurrency]);
 
   return (
     <div className="liquid-glass rounded-3xl p-6 sm:p-7 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 overflow-hidden">
@@ -70,7 +72,7 @@ export function BudgetAlertsWidget({ expenses, budgets, categories, categoryColo
                   )}
                 </div>
                 <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                  {formatCurrency(spent)} <span className="text-slate-400 dark:text-slate-500 font-normal">/ {formatCurrency(budget)}</span>
+                  {formatCurrency(spent, baseCurrency)} <span className="text-slate-400 dark:text-slate-500 font-normal">/ {formatCurrency(budget, baseCurrency)}</span>
                 </div>
               </div>
               

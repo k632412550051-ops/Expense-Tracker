@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, query, orderBy, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Expense, BudgetMap, DEFAULT_CATEGORIES, DEFAULT_BUDGETS, Category, DEFAULT_INCOME_CATEGORIES, DEFAULT_CATEGORY_COLORS } from '../types';
+import { 
+  Expense, 
+  BudgetMap, 
+  DEFAULT_CATEGORIES, 
+  DEFAULT_BUDGETS, 
+  Category, 
+  DEFAULT_INCOME_CATEGORIES, 
+  DEFAULT_CATEGORY_COLORS,
+  UserProfile
+} from '../types';
 
 export function useFirebaseData() {
   const [user, setUser] = useState(auth.currentUser);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [incomeCategories, setIncomeCategories] = useState<Category[]>(DEFAULT_INCOME_CATEGORIES);
   const [categoryColors, setCategoryColors] = useState<Record<string, string>>(DEFAULT_CATEGORY_COLORS);
@@ -25,6 +35,7 @@ export function useFirebaseData() {
   useEffect(() => {
     if (!user) {
       setExpenses([]);
+      setUserProfile(null);
       setCategories(DEFAULT_CATEGORIES);
       setIncomeCategories(DEFAULT_INCOME_CATEGORIES);
       setCategoryColors(DEFAULT_CATEGORY_COLORS);
@@ -42,7 +53,13 @@ export function useFirebaseData() {
           incomeCategories: DEFAULT_INCOME_CATEGORIES,
           categoryColors: DEFAULT_CATEGORY_COLORS,
           budgets: DEFAULT_BUDGETS,
-          email: user.email
+          email: user.email,
+          profile: {
+            displayName: user.displayName || '',
+            baseCurrency: 'VND',
+            frequentCurrencies: ['VND', 'USD'],
+            onboarded: false,
+          }
         });
       }
     });
@@ -50,6 +67,9 @@ export function useFirebaseData() {
     const unsubUser = onSnapshot(userRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data();
+        if (data.profile) {
+          setUserProfile(data.profile);
+        }
         setCategories(data.categories || DEFAULT_CATEGORIES);
         setIncomeCategories(data.incomeCategories || DEFAULT_INCOME_CATEGORIES);
         setCategoryColors(data.categoryColors || DEFAULT_CATEGORY_COLORS);
@@ -69,6 +89,9 @@ export function useFirebaseData() {
         exps.push({
           id: d.id,
           amount: data.amount,
+          currency: data.currency,
+          exchangeRate: data.exchangeRate,
+          convertedAmount: data.convertedAmount,
           category: data.category,
           date: data.date,
           note: data.note,
@@ -169,9 +192,21 @@ export function useFirebaseData() {
      await Promise.all(promises);
   };
 
+  const updateUserProfile = async (profileUpdates: Partial<UserProfile>) => {
+    if (!user) return;
+    const userRef = doc(db, 'users', user.uid);
+    await setDoc(userRef, {
+      profile: {
+        ...(userProfile || {}),
+        ...profileUpdates
+      }
+    }, { merge: true });
+  };
+
   return {
     user,
     loading,
+    userProfile,
     categories,
     incomeCategories,
     categoryColors,
@@ -181,6 +216,7 @@ export function useFirebaseData() {
     deleteExpense,
     updateExpense,
     updateUserSettings,
-    updateExpensesCategory
+    updateExpensesCategory,
+    updateUserProfile
   };
 }

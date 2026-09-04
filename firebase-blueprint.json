@@ -1,6 +1,14 @@
 {
   "users": {
     "__UID__": {
+      "profile": {
+        "displayName": "Minh",
+        "persona": "student",
+        "baseCurrency": "VND",
+        "frequentCurrencies": ["USD", "VND"],
+        "monthlyBudget": 10000000,
+        "onboarded": true
+      },
       "categories": [
         "Ăn ngoài",
         "Chi tiêu phát sinh",
@@ -19,10 +27,16 @@
       },
       "expenses": {
         "__EXPENSE_ID__": {
-          "amount": 150000,
+          "amount": 15,
+          "currency": "USD",
+          "exchangeRate": 25400,
+          "convertedAmount": 381000,
           "category": "Ăn ngoài",
           "date": "2026-06-21",
-          "note": "Bữa tối",
+          "note": "Bữa trưa tại khuôn viên trường",
+          "type": "expense",
+          "isReimbursable": false,
+          "isResolved": false,
           "createdAt": "<SERVER_TIMESTAMP>"
         }
       }
