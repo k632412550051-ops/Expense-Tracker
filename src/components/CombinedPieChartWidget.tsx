@@ -46,36 +46,36 @@ export function CombinedPieChartWidget({
   }, [activeExpenses, categoryColors]);
 
   return (
-    <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 flex flex-col min-h-[420px] overflow-hidden">
+    <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[420px] overflow-hidden">
       {/* Top specular highlight */}
-      <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
 
       {/* Header with Title & Period Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-400/30 flex items-center justify-center text-blue-600">
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-400/30 dark:border-blue-400/20 flex items-center justify-center text-blue-600 dark:text-cyan-400">
               <PieIcon className="w-4 h-4" />
             </div>
-            <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
               Cơ cấu chi tiêu
             </h2>
           </div>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Tổng chi: <span className="font-bold text-slate-900">{formatCurrency(totalAmount)}</span>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+            Tổng chi: <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totalAmount)}</span>
           </p>
         </div>
 
         {/* Tab switcher: Tháng này / Tháng trước */}
-        <div className="flex items-center p-1 rounded-2xl bg-blue-950/5 border border-white/70 backdrop-blur-md self-start sm:self-auto">
+        <div className="flex items-center p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-950/50 border border-white/70 dark:border-white/10 backdrop-blur-md self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setSelectedPeriod('current')}
             className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
               selectedPeriod === 'current'
-                ? "bg-white text-blue-700 shadow-md shadow-blue-500/10 border border-white/80"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-cyan-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/10"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             )}
           >
             Tháng {currentMonthLabel}
@@ -86,8 +86,8 @@ export function CombinedPieChartWidget({
             className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
               selectedPeriod === 'previous'
-                ? "bg-white text-blue-700 shadow-md shadow-blue-500/10 border border-white/80"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-cyan-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/10"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             )}
           >
             Tháng trước ({previousMonthLabel})
@@ -96,7 +96,7 @@ export function CombinedPieChartWidget({
       </div>
 
       {data.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center py-12 text-slate-400 text-xs sm:text-sm font-medium">
+        <div className="flex-1 flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500 text-xs sm:text-sm font-medium">
           <p>Không có khoản chi nào trong Tháng {activeLabel}.</p>
         </div>
       ) : (
@@ -141,28 +141,31 @@ export function CombinedPieChartWidget({
                   formatter={(value: number) => [formatCurrency(value), 'Đã chi']}
                   contentStyle={{ 
                     borderRadius: '16px', 
-                    background: 'rgba(255, 255, 255, 0.92)', 
+                    background: 'rgba(15, 23, 42, 0.85)', 
                     backdropFilter: 'blur(12px)', 
-                    border: '1px solid rgba(255, 255, 255, 0.9)', 
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' 
+                    border: '1px solid rgba(255, 255, 255, 0.15)', 
+                    color: '#f8fafc',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)' 
                   }}
+                  itemStyle={{ color: '#f8fafc' }}
+                  labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
           
           {/* Custom Legend */}
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2 pt-3 border-t border-blue-100/40">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2 pt-3 border-t border-blue-100/40 dark:border-white/10">
             {data.map((entry, index) => (
               <div key={`legend-${index}`} className="flex items-center gap-1.5">
                 <span 
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-2 ring-white shadow-xs" 
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-2 ring-white dark:ring-white/20 shadow-xs" 
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="text-slate-700 font-bold text-xs truncate max-w-[130px]">
+                <span className="text-slate-700 dark:text-slate-300 font-bold text-xs truncate max-w-[130px]">
                   {entry.name}
                 </span>
-                <span className="text-slate-400 text-[11px] font-medium">
+                <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">
                   ({((entry.value / totalAmount) * 100).toFixed(0)}%)
                 </span>
               </div>

@@ -48,10 +48,10 @@ export function BarChartWidget({ expenses, currentMonthKey }: BarChartWidgetProp
   }, [expenses, currentMonthKey]);
 
   return (
-    <div className="liquid-glass rounded-3xl p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 flex flex-col h-[400px] overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
-      <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 mb-1 tracking-tight">Chi tiêu 6 tháng gần nhất</h2>
-      <p className="text-xs text-slate-500 font-medium mb-3">Xu hướng biến động chi tiêu theo thời gian</p>
+    <div className="liquid-glass rounded-3xl p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col h-[400px] overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
+      <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-1 tracking-tight">Chi tiêu 6 tháng gần nhất</h2>
+      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-3">Xu hướng biến động chi tiêu theo thời gian</p>
       <div className="flex-1 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -61,25 +61,32 @@ export function BarChartWidget({ expenses, currentMonthKey }: BarChartWidgetProp
                 <stop offset="100%" stopColor="#2563eb" />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(203, 213, 225, 0.4)" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.2)" />
             <XAxis 
               dataKey="name" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+              tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }} 
               dy={10}
             />
             <YAxis 
               tickFormatter={(value) => value >= 1000000 ? `${(value / 1000000).toFixed(1).replace('.0', '')}tr` : `${(value / 1000).toFixed(0)}k`}
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+              tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }}
             />
             <Tooltip 
-              cursor={{ fill: 'rgba(238, 242, 255, 0.4)' }}
+              cursor={{ fill: 'rgba(56, 189, 248, 0.08)' }}
               formatter={(value: number) => [formatCurrency(value), 'Tổng chi']}
-              labelStyle={{ color: '#1e293b', fontWeight: 'bold', marginBottom: '4px' }}
-              contentStyle={{ borderRadius: '16px', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.9)', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}
+              labelStyle={{ color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' }}
+              itemStyle={{ color: '#f8fafc' }}
+              contentStyle={{ 
+                borderRadius: '16px', 
+                background: 'rgba(15, 23, 42, 0.85)', 
+                backdropFilter: 'blur(12px)', 
+                border: '1px solid rgba(255, 255, 255, 0.15)', 
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)' 
+              }}
             />
             <Bar dataKey="total" fill="url(#barGradient)" radius={[8, 8, 0, 0]} maxBarSize={48} />
           </BarChart>
