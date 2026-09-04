@@ -9,6 +9,20 @@ export function cn(...inputs: ClassValue[]) {
 let activeCurrencyCode: CurrencyCode = 'VND';
 let activePrivacyMode: boolean = false;
 
+// Synchronously initialize from localStorage on module load
+try {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const saved = window.localStorage.getItem('expense_tracker_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.currency) activeCurrencyCode = parsed.currency;
+      if (typeof parsed.privacyMode === 'boolean') activePrivacyMode = parsed.privacyMode;
+    }
+  }
+} catch {
+  // Ignore fallback error
+}
+
 export function setGlobalCurrency(currency: CurrencyCode) {
   activeCurrencyCode = currency;
 }

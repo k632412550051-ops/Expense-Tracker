@@ -46,18 +46,21 @@ export default function App() {
 
   // App Settings (Currency, Theme, Privacy Mode)
   const [settings, setSettings] = useState<AppSettings>(() => {
+    let initial = DEFAULT_SETTINGS;
     try {
       const saved = localStorage.getItem('expense_tracker_settings');
       if (saved) {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        initial = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
       }
     } catch (e) {
       console.error("Failed to parse settings:", e);
     }
-    return DEFAULT_SETTINGS;
+    setGlobalCurrency(initial.currency);
+    setGlobalPrivacyMode(initial.privacyMode);
+    return initial;
   });
 
-  // Sync settings with global utils, localStorage & dark mode
+  // Sync settings with localStorage & dark mode
   useEffect(() => {
     setGlobalCurrency(settings.currency);
     setGlobalPrivacyMode(settings.privacyMode);
@@ -87,8 +90,35 @@ export default function App() {
   }, [settings]);
 
   const handleUpdateSettings = (partial: Partial<AppSettings>) => {
-    setSettings(prev => ({ ...prev, ...partial }));
-    showNotification('Đã cập nhật cài đặt');
+    // 1. Immediately & synchronously update module globals BEFORE state commit
+    if (partial.currency !== undefined) {
+      setGlobalCurrency(partial.currency);
+    }
+    if (partial.privacyMode !== undefined) {
+      setGlobalPrivacyMode(partial.privacyMode);
+    }
+
+    // 2. Update React state immediately
+    setSettings(prev => {
+      const next = { ...prev, ...partial };
+      setGlobalCurrency(next.currency);
+      setGlobalPrivacyMode(next.privacyMode);
+      try {
+        localStorage.setItem('expense_tracker_settings', JSON.stringify(next));
+      } catch (e) {
+        console.error("Failed to save settings:", e);
+      }
+      return next;
+    });
+
+    // 3. Inform user instantly
+    if (partial.privacyMode !== undefined) {
+      showNotification(
+        partial.privacyMode ? 'Đã ẩn số dư (Chế độ riêng tư)' : 'Đã hiển thị số dư'
+      );
+    } else {
+      showNotification('Đã cập nhật cài đặt');
+    }
   };
   
   const getLocalMonthString = () => {
@@ -410,14 +440,23 @@ export default function App() {
           <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
              <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
              <div className="flex items-center justify-between mb-2 sm:mb-3">
-               <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Số dư</span>
+               <div className="flex items-center gap-1.5">
+                 <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Số dư</span>
+                 <button
+                   onClick={() => handleUpdateSettings({ privacyMode: !settings.privacyMode })}
+                   className="p-1 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/60 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                   title={settings.privacyMode ? "Hiện số dư" : "Ẩn số dư"}
+                 >
+                   {settings.privacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5" />}
+                 </button>
+               </div>
                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-500/10 border border-blue-400/30 flex items-center justify-center text-blue-600">
                  <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                </div>
              </div>
              <div>
                <p className={`text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                 {formatCurrency(balance)}
+                 {formatCurrency(balance, settings.currency, settings.privacyMode)}
                </p>
                <p className="text-[10px] sm:text-[11px] font-semibold mt-0.5 truncate text-slate-400">
                  {balance >= 0 ? 'Thặng dư' : 'Thâm hụt'}
@@ -436,7 +475,7 @@ export default function App() {
             </div>
             <div>
               <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
-                {formatCurrency(totalIncome)}
+                {formatCurrency(totalIncome, settings.currency, settings.privacyMode)}
               </p>
               <p className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 truncate">
                 +{currentMonthIncomeList.length} khoản
@@ -455,11 +494,11 @@ export default function App() {
             </div>
             <div>
               <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
-                {formatCurrency(totalSpent)}
+                {formatCurrency(totalSpent, settings.currency, settings.privacyMode)}
               </p>
               {totalReimbursable > 0 ? (
                 <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 truncate">
-                  Chờ hoàn {formatCurrency(totalReimbursable)}
+                  Chờ hoàn {formatCurrency(totalReimbursable, settings.currency, settings.privacyMode)}
                 </p>
               ) : (
                 <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5 truncate">
@@ -480,7 +519,7 @@ export default function App() {
             </div>
             <div>
               <p className="text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight text-slate-900 dark:text-white">
-                {formatCurrency(totalBudget)}
+                {formatCurrency(totalBudget, settings.currency, settings.privacyMode)}
               </p>
               <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5 truncate">
                 {totalBudget > 0 ? `Đã dùng ${((totalSpent / totalBudget) * 100).toFixed(0)}%` : 'Chưa đặt'}
