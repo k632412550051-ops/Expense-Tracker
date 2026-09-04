@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Category, Expense } from '../types';
 import { PlusCircle } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
@@ -69,7 +71,11 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
   };
 
   return (
-    <form onSubmit={handleSubmit} className="liquid-glass rounded-3xl p-6 sm:p-7 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col gap-4 overflow-hidden">
+    <motion.form 
+      layout
+      onSubmit={handleSubmit} 
+      className="liquid-glass rounded-3xl p-6 sm:p-7 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col gap-4 overflow-hidden"
+    >
       {/* Top Specular Line */}
       <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
 
@@ -83,27 +89,44 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
           </h2>
         </div>
 
-        <div className="flex p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-900/60 border border-white/70 dark:border-white/15 backdrop-blur-md self-start sm:self-auto">
+        {/* Sliding Pill between Chi tiêu and Thu nhập */}
+        <div className="flex p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-900/60 border border-white/70 dark:border-white/15 backdrop-blur-md relative self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setType('expense')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            className={cn(
+              "relative px-3.5 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer z-10",
               type === 'expense'
-                ? 'bg-white dark:bg-slate-800 text-rose-600 dark:text-rose-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/15'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-            }`}
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            )}
           >
+            {type === 'expense' && (
+              <motion.div
+                layoutId="expenseFormTypePill"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-md shadow-rose-500/10 border border-white/80 dark:border-white/15 -z-10"
+                transition={{ type: "spring", stiffness: 450, damping: 35 }}
+              />
+            )}
             Chi tiêu
           </button>
           <button
             type="button"
             onClick={() => setType('income')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            className={cn(
+              "relative px-3.5 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer z-10",
               type === 'income'
-                ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/15'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-            }`}
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            )}
           >
+            {type === 'income' && (
+              <motion.div
+                layoutId="expenseFormTypePill"
+                className="absolute inset-0 bg-white dark:bg-slate-800 rounded-xl shadow-md shadow-emerald-500/10 border border-white/80 dark:border-white/15 -z-10"
+                transition={{ type: "spring", stiffness: 450, damping: 35 }}
+              />
+            )}
             Thu nhập
           </button>
         </div>
@@ -126,15 +149,25 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
 
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Danh mục</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Category)}
-            className="px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all text-sm font-medium cursor-pointer"
-          >
-            {currentCategories.map(cat => (
-              <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{cat}</option>
-            ))}
-          </select>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div 
+              key={type}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
+            >
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as Category)}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all text-sm font-medium cursor-pointer"
+              >
+                {currentCategories.map(cat => (
+                  <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{cat}</option>
+                ))}
+              </select>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -181,28 +214,39 @@ export function ExpenseForm({ onAddExpense, categories, incomeCategories = [], r
         </div>
       </div>
 
-      {type === 'expense' && (
-        <div className="flex items-center gap-2.5 mt-0.5 px-1">
-          <input
-            type="checkbox"
-            id="isReimbursable"
-            checked={isReimbursable}
-            onChange={(e) => setIsReimbursable(e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
-          />
-          <label htmlFor="isReimbursable" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-            Chi ứng trước (cần đòi / hoàn lại)
-          </label>
-        </div>
-      )}
+      <AnimatePresence initial={false}>
+        {type === 'expense' && (
+          <motion.div
+            key="reimbursable-checkbox"
+            initial={{ opacity: 0, height: 0, y: -6 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center gap-2.5 mt-0.5 px-1 overflow-hidden"
+          >
+            <input
+              type="checkbox"
+              id="isReimbursable"
+              checked={isReimbursable}
+              onChange={(e) => setIsReimbursable(e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <label htmlFor="isReimbursable" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+              Chi ứng trước (cần đòi / hoàn lại)
+            </label>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <button
+      <motion.button
+        layout
+        whileTap={{ scale: 0.98 }}
         type="submit"
         className="liquid-glass-btn-primary liquid-crystal-sheen mt-2 flex items-center justify-center gap-2 text-white font-bold py-3 px-6 rounded-2xl transition-all cursor-pointer"
       >
         <PlusCircle className="w-4 h-4" />
         <span>Lưu giao dịch</span>
-      </button>
-    </form>
+      </motion.button>
+    </motion.form>
   );
 }
