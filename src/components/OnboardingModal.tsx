@@ -100,7 +100,7 @@ export function OnboardingModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ type: "spring", stiffness: 350, damping: 30 }}
-        className="liquid-glass-elevated rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-white dark:border-white/15 shadow-2xl relative flex flex-col my-auto overflow-hidden"
+        className="liquid-glass-elevated rounded-3xl max-w-lg w-full max-h-[92vh] p-5 sm:p-7 border border-white dark:border-white/15 shadow-2xl relative flex flex-col my-auto overflow-hidden"
       >
         {/* Top specular highlight */}
         <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />

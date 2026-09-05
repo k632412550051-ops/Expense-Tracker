@@ -722,7 +722,7 @@ export function TransactionHistory({
                   <ArrowDownLeft className="w-3.5 h-3.5" /> Tổng chi
                 </span>
                 <p className="text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-1">
-                  {formatCurrency(selectedDayTotals.expense)}
+                  {formatCurrency(selectedDayTotals.expense, baseCurrency)}
                 </p>
               </div>
               <div className="liquid-glass p-3.5 rounded-2xl border border-emerald-200/50 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/30">
@@ -730,7 +730,7 @@ export function TransactionHistory({
                   <ArrowUpRight className="w-3.5 h-3.5" /> Tổng thu
                 </span>
                 <p className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-                  {formatCurrency(selectedDayTotals.income)}
+                  {formatCurrency(selectedDayTotals.income, baseCurrency)}
                 </p>
               </div>
             </div>
