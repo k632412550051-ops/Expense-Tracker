@@ -80,6 +80,11 @@ export interface Expense {
   type?: 'income' | 'expense';
   isReimbursable?: boolean;
   isResolved?: boolean;
+  // Google Calendar Integration fields
+  calendarEventId?: string;
+  calendarEventLink?: string;
+  calendarSyncedAt?: string;
+  reimbursementReminderDate?: string; // Target date (YYYY-MM-DD) to receive reimbursement
 }
 
 export type BudgetMap = Record<Category, number>;
@@ -124,6 +129,8 @@ export interface AppSettings {
   privacyMode: boolean;
   travelCurrency?: CurrencyCode; // Quick currency for spending while abroad/traveling
   customExchangeRates?: Record<string, number>; // Pair like "USD_VND" => 25400
+  calendarAutoSync?: boolean; // Automatically sync reimbursable expenses to Google Calendar
+  calendarReminderDays?: number; // Days after expense date to schedule reminder (e.g. 3, 7)
 }
 
 export interface CurrencyOption {

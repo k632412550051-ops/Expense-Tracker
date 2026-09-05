@@ -4,13 +4,24 @@ import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); /* CRITICAL: The app will break without this line */
+export const db = (firebaseConfig as any).firestoreDatabaseId 
+  ? getFirestore(app, (firebaseConfig as any).firestoreDatabaseId) 
+  : getFirestore(app);
 export const auth = getAuth(app);
 
 export const loginWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
+  // Request Calendar Events scope so users can automatically sync reimbursement reminders
+  provider.addScope('https://www.googleapis.com/auth/calendar.events');
   try {
-    return await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    if (credential?.accessToken) {
+      sessionStorage.setItem('google_calendar_token', credential.accessToken);
+      localStorage.setItem('google_calendar_token', credential.accessToken);
+      localStorage.setItem('google_calendar_connected', 'true');
+    }
+    return result;
   } catch (error) {
     console.error("Error signing in with Google", error);
     throw error;

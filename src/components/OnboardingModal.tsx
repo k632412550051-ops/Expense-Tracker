@@ -14,6 +14,14 @@ import {
   X
 } from 'lucide-react';
 import { CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
+import { PERSONA_CONFIGS } from '../lib/persona';
+import { formatCurrency } from '../lib/utils';
+import { 
+  Sparkles,
+  Layers,
+  Zap,
+  Lightbulb
+} from 'lucide-react';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -81,12 +89,17 @@ export function OnboardingModal({
 
   const handleFinishAndSignIn = async () => {
     const finalName = displayName.trim() || 'Bạn';
+    const pConfig = PERSONA_CONFIGS[persona] || PERSONA_CONFIGS.student;
+    const targetBudget = baseCurrency === 'VND' 
+      ? pConfig.recommendedMonthlyBudgetVND 
+      : pConfig.recommendedMonthlyBudgetUSD;
+
     await onComplete({
       displayName: finalName,
       persona,
       baseCurrency,
       frequentCurrencies: Array.from(new Set([baseCurrency, ...frequentCurrencies])),
-      monthlyBudget: baseCurrency === 'VND' ? 10000000 : 1500
+      monthlyBudget: targetBudget
     });
     await onGoogleSignIn();
   };
@@ -183,7 +196,7 @@ export function OnboardingModal({
               </motion.div>
             )}
 
-            {/* STEP 2: PERSONA (GIẢN LƯỢC THÔNG TIN) */}
+            {/* STEP 2: PERSONA (CÁ NHÂN HÓA RÕ RÀNG) */}
             {step === 2 && (
               <motion.div
                 key="step-2"
@@ -191,34 +204,36 @@ export function OnboardingModal({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -16 }}
                 transition={{ duration: 0.18 }}
-                className="space-y-4"
+                className="space-y-3.5"
               >
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white tracking-tight mb-1">
                     Bạn là ai?
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                    Chọn nhanh vai trò để cá nhân hóa gợi ý chi tiêu.
+                    Chọn vai trò để ứng dụng tự động thiết lập danh mục chi tiêu, ngân sách & gợi ý phù hợp nhất cho bạn.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1">
+                {/* Persona selector grid */}
+                <div className="grid grid-cols-2 gap-2.5 pt-0.5">
                   {PERSONA_LIST.map((item) => {
                     const Icon = item.icon;
                     const isSelected = persona === item.id;
+                    const config = PERSONA_CONFIGS[item.id];
                     return (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => setPersona(item.id)}
-                        className={`p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                        className={`p-3 sm:p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2.5 ${
                           isSelected
                             ? 'bg-blue-50/90 dark:bg-blue-950/50 border-blue-500 ring-2 ring-blue-500/20 shadow-xs'
                             : 'bg-white/70 dark:bg-slate-900/50 border-slate-200 dark:border-white/10 hover:border-blue-300'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                             isSelected 
                               ? 'bg-blue-600 text-white shadow-xs' 
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
@@ -231,13 +246,85 @@ export function OnboardingModal({
                             </div>
                           )}
                         </div>
-                        <span className="font-bold text-sm text-slate-900 dark:text-white">
-                          {item.title}
-                        </span>
+                        <div>
+                          <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white block">
+                            {item.title}
+                          </span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                            {config?.focusAreas.slice(0, 2).join(' • ')}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}
                 </div>
+
+                {/* Dedicated Personalization Explainer Card */}
+                {PERSONA_CONFIGS[persona] && (
+                  <motion.div 
+                    key={persona}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-50/90 to-indigo-50/70 dark:from-slate-900/90 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 shadow-xs space-y-2.5 text-xs"
+                  >
+                    <div className="flex items-start justify-between gap-2 border-b border-blue-100 dark:border-blue-900/40 pb-2">
+                      <div className="flex items-center gap-1.5 text-blue-900 dark:text-cyan-300 font-extrabold text-xs">
+                        <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
+                        <span>App sẽ tự động cá nhân hóa những gì?</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-600/10 text-blue-700 dark:text-cyan-300 shrink-0">
+                        Ngân sách gợi ý: {PERSONA_CONFIGS[persona].recommendedMonthlyBudgetVND.toLocaleString('vi-VN')} ₫/tháng
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
+                      {PERSONA_CONFIGS[persona].description}
+                    </p>
+
+                    {/* Auto-configured categories */}
+                    <div>
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        <Layers className="w-3 h-3 text-blue-500" />
+                        <span>Bộ 6 danh mục được tạo sẵn:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {PERSONA_CONFIGS[persona].defaultCategories.map((cat) => (
+                          <span 
+                            key={cat}
+                            className="px-2 py-0.5 rounded-lg bg-white/90 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-[10px] font-bold text-slate-800 dark:text-slate-200 shadow-2xs"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Quick input notes */}
+                    <div>
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        <Zap className="w-3 h-3 text-amber-500" />
+                        <span>Gợi ý ghi chú nhanh 1 chạm khi nhập chi:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {PERSONA_CONFIGS[persona].quickNoteSuggestions.map((q) => (
+                          <span 
+                            key={q}
+                            className="px-1.5 py-0.5 rounded-md bg-blue-100/60 dark:bg-blue-900/30 text-blue-700 dark:text-cyan-300 text-[10px] font-medium"
+                          >
+                            {q}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Advice snippet */}
+                    <div className="flex items-start gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 pt-0.5">
+                      <Lightbulb className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
+                      <span className="italic">{PERSONA_CONFIGS[persona].financialAdvice}</span>
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
             )}
 

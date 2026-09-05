@@ -97,7 +97,11 @@ export function useFirebaseData() {
           note: data.note,
           type: data.type || 'expense',
           isReimbursable: data.isReimbursable || false,
-          isResolved: data.isResolved || false
+          isResolved: data.isResolved || false,
+          calendarEventId: data.calendarEventId,
+          calendarEventLink: data.calendarEventLink,
+          calendarSyncedAt: data.calendarSyncedAt,
+          reimbursementReminderDate: data.reimbursementReminderDate,
         });
       });
       setExpenses(exps);
@@ -115,10 +119,15 @@ export function useFirebaseData() {
     try {
       if (!user) return;
       const expenseRef = doc(collection(db, 'users', user.uid, 'expenses'));
+      // Clean undefined fields for Firestore
+      const cleanExpense = Object.fromEntries(
+        Object.entries(expense).filter(([_, v]) => v !== undefined)
+      );
       await setDoc(expenseRef, {
-        ...expense,
+        ...cleanExpense,
         createdAt: new Date().toISOString()
       });
+      return expenseRef.id;
     } catch (error: any) {
       console.error("Lỗi khi thêm chi tiêu:", error);
       alert("Không thể lưu chi tiêu: " + error.message);

@@ -16,11 +16,22 @@ import {
   ChevronRight,
   TrendingUp,
   Sparkles,
-  Plane
+  Plane,
+  Calendar as CalendarIcon,
+  BellRing,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
-import { AppSettings, CurrencyCode, CURRENCY_OPTIONS, UserProfile } from '../types';
+import { AppSettings, CurrencyCode, CURRENCY_OPTIONS, UserProfile, Expense } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
-import { getExchangeRate } from '../lib/exchangeRates';
+import { getExchangeRate, fetchLiveExchangeRates, getRatesCacheInfo } from '../lib/exchangeRates';
+import { 
+  isGoogleCalendarConnected, 
+  connectGoogleCalendar, 
+  disconnectGoogleCalendar 
+} from '../lib/googleCalendar';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -36,6 +47,9 @@ interface SettingsModalProps {
   onUpdateProfile?: (data: Partial<UserProfile>) => Promise<void>;
   onOpenBudgetModal: () => void;
   onLogout: () => void;
+  expenses?: Expense[];
+  onSyncExpensesCalendar?: () => Promise<number>;
+  onShowNotification?: (msg: string, type?: 'success' | 'error') => void;
 }
 
 export function SettingsModal({
@@ -48,8 +62,55 @@ export function SettingsModal({
   onUpdateProfile,
   onOpenBudgetModal,
   onLogout,
+  expenses = [],
+  onSyncExpensesCalendar,
+  onShowNotification
 }: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'currency' | 'appearance'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'currency' | 'appearance' | 'calendar'>('general');
+  const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(() => isGoogleCalendarConnected());
+
+  // Real-time exchange rate state (auto updates 3 days/time, with manual trigger)
+  const [ratesInfo, setRatesInfo] = useState(() => getRatesCacheInfo());
+  const [isUpdatingRates, setIsUpdatingRates] = useState(false);
+  const [rateDisplayMode, setRateDisplayMode] = useState<'perVND' | 'perForeign'>('perVND');
+
+  const handleRefreshRates = async () => {
+    try {
+      setIsUpdatingRates(true);
+      await fetchLiveExchangeRates(true);
+      setRatesInfo(getRatesCacheInfo());
+      onShowNotification?.('Đã cập nhật tỷ giá thị trường thời gian thực! 💱');
+    } catch (err: any) {
+      onShowNotification?.('Không thể lấy tỷ giá mới lúc này.', 'error');
+    } finally {
+      setIsUpdatingRates(false);
+    }
+  };
+
+  const handleToggleCalendar = async (checked: boolean) => {
+    if (checked) {
+      try {
+        setIsConnectingCalendar(true);
+        await connectGoogleCalendar();
+        setCalendarConnected(true);
+        onUpdateSettings({ calendarAutoSync: true });
+        onShowNotification?.('Đã bật đồng bộ Google Calendar! 📅');
+      } catch (err: any) {
+        setCalendarConnected(false);
+        onUpdateSettings({ calendarAutoSync: false });
+        onShowNotification?.(err?.message || 'Không thể kết nối Google Calendar', 'error');
+      } finally {
+        setIsConnectingCalendar(false);
+      }
+    } else {
+      disconnectGoogleCalendar();
+      setCalendarConnected(false);
+      onUpdateSettings({ calendarAutoSync: false });
+      onShowNotification?.('Đã tắt đồng bộ Google Calendar.');
+    }
+  };
 
   const userInitial = user.displayName 
     ? user.displayName.charAt(0).toUpperCase() 
@@ -71,19 +132,18 @@ export function SettingsModal({
         >
           <motion.div 
             key="settings-dialog"
-            layout
-            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className="liquid-glass-elevated w-full max-w-lg max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl border border-white/80 dark:border-white/10 dark:bg-slate-900/90 flex flex-col relative"
+            className="liquid-glass-elevated w-full max-w-lg h-[580px] max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl border border-white/80 dark:border-white/10 dark:bg-slate-900/95 flex flex-col relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Specular line */}
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
 
             {/* Modal Header */}
-            <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white/40 dark:bg-slate-900/40">
+            <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white/40 dark:bg-slate-900/40 shrink-0 z-20">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20 shadow-xs">
                   <SettingsIcon className="w-4 h-4" />
@@ -106,12 +166,12 @@ export function SettingsModal({
               </button>
             </div>
 
-            {/* Quick Tabs */}
-            <div className="flex items-center gap-1.5 px-5 sm:px-6 pt-3 pb-1 border-b border-slate-100 dark:border-slate-800/80 bg-white/20 dark:bg-slate-900/20 overflow-x-auto relative">
+            {/* Quick Tabs - shrink-0 ensures tabs never clip when switching tabs */}
+            <div className="flex items-center gap-1.5 px-5 sm:px-6 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/80 bg-white/20 dark:bg-slate-900/20 overflow-x-auto shrink-0 z-10">
               <button
                 onClick={() => setActiveTab('general')}
                 className={cn(
-                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'general'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -121,7 +181,7 @@ export function SettingsModal({
                   <motion.div
                     layoutId="settingsTabIndicator"
                     className="absolute inset-0 bg-blue-600 rounded-xl shadow-xs -z-10"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 <User className="w-3.5 h-3.5" />
@@ -131,7 +191,7 @@ export function SettingsModal({
               <button
                 onClick={() => setActiveTab('currency')}
                 className={cn(
-                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'currency'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -141,7 +201,7 @@ export function SettingsModal({
                   <motion.div
                     layoutId="settingsTabIndicator"
                     className="absolute inset-0 bg-blue-600 rounded-xl shadow-xs -z-10"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 <Coins className="w-3.5 h-3.5" />
@@ -151,7 +211,7 @@ export function SettingsModal({
               <button
                 onClick={() => setActiveTab('appearance')}
                 className={cn(
-                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'appearance'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -161,25 +221,45 @@ export function SettingsModal({
                   <motion.div
                     layoutId="settingsTabIndicator"
                     className="absolute inset-0 bg-blue-600 rounded-xl shadow-xs -z-10"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Giao diện</span>
               </button>
+
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={cn(
+                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  activeTab === 'calendar'
+                    ? "text-white"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                )}
+              >
+                {activeTab === 'calendar' && (
+                  <motion.div
+                    layoutId="settingsTabIndicator"
+                    className="absolute inset-0 bg-blue-600 rounded-xl shadow-xs -z-10"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <CalendarIcon className="w-3.5 h-3.5" />
+                <span>Google Calendar</span>
+              </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-5 sm:p-6 overflow-y-auto flex-1 relative min-h-[300px]">
+            <div className="p-5 sm:p-6 overflow-y-auto flex-1 relative overscroll-contain">
               <AnimatePresence mode="wait" initial={false}>
                 {/* TAB 1: GENERAL & ACCOUNT */}
                 {activeTab === 'general' && (
                   <motion.div 
                     key="tab-general"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.16 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                     className="space-y-4"
                   >
                     {/* Account Card */}
@@ -277,10 +357,10 @@ export function SettingsModal({
                 {activeTab === 'currency' && (
                   <motion.div 
                     key="tab-currency"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.16 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                     className="space-y-5"
                   >
                     {/* Section 1: Base Currency */}
@@ -382,28 +462,99 @@ export function SettingsModal({
                       </div>
                     </div>
 
-                    {/* Section 3: Reference Exchange Rates (Kept for user per request) */}
-                    <div className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                          Bảng tỷ giá tham chiếu (theo 1 {settings.currency})
-                        </h4>
+                    {/* Section 3: Live Exchange Rates with 3-day update policy */}
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/50 pb-2.5">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                              Tỷ giá thị trường thời gian thực
+                            </h4>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Chu kỳ cập nhật 3 ngày/lần • Lần cuối: <span className="font-semibold text-slate-700 dark:text-slate-300">{ratesInfo.lastUpdatedText}</span>
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-start sm:self-auto">
+                          {/* Toggle view: theo 1 VND vs theo 1 Ngoại tệ */}
+                          <div className="p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center text-[10px] font-bold">
+                            <button
+                              type="button"
+                              onClick={() => setRateDisplayMode('perVND')}
+                              className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                                rateDisplayMode === 'perVND'
+                                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-400 shadow-2xs font-extrabold'
+                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                              }`}
+                            >
+                              Theo 1 VND
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRateDisplayMode('perForeign')}
+                              className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                                rateDisplayMode === 'perForeign'
+                                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-400 shadow-2xs font-extrabold'
+                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                              }`}
+                            >
+                              Theo 1 Ngoại tệ
+                            </button>
+                          </div>
+
+                          {/* Manual refresh button */}
+                          <button
+                            type="button"
+                            disabled={isUpdatingRates}
+                            onClick={handleRefreshRates}
+                            title="Làm mới tỷ giá ngay lập tức"
+                            className="p-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-slate-600 transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            <RefreshCw className={cn("w-3.5 h-3.5", isUpdatingRates && "animate-spin")} />
+                          </button>
+                        </div>
                       </div>
 
+                      {/* Exchange rates grid */}
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {CURRENCY_OPTIONS.filter(c => c.code !== settings.currency).slice(0, 6).map(c => {
-                          const rate = getExchangeRate(c.code, settings.currency);
-                          return (
-                            <div key={c.code} className="p-2 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 flex flex-col">
-                              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                <span>{c.flag}</span> 1 {c.code}
-                              </span>
-                              <span className="text-xs font-extrabold text-blue-600 dark:text-cyan-400 mt-0.5">
-                                ≈ {formatCurrency(rate, settings.currency)}
-                              </span>
-                            </div>
-                          );
+                        {CURRENCY_OPTIONS.filter(c => c.code !== 'VND').map(c => {
+                          if (rateDisplayMode === 'perVND') {
+                            const rateFromVND = getExchangeRate('VND', c.code);
+                            let formattedRate: string;
+                            if (rateFromVND < 0.0001) {
+                              formattedRate = rateFromVND.toFixed(6);
+                            } else if (rateFromVND < 0.01) {
+                              formattedRate = rateFromVND.toFixed(4);
+                            } else {
+                              formattedRate = rateFromVND.toFixed(2);
+                            }
+
+                            return (
+                              <div key={c.code} className="p-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-100 dark:border-slate-800/80 flex flex-col justify-between shadow-2xs">
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                                  <span>1 VND</span>
+                                  <span>{c.flag} {c.code}</span>
+                                </span>
+                                <span className="text-xs font-black text-blue-600 dark:text-cyan-400 mt-1 truncate">
+                                  ≈ {formattedRate} {c.code}
+                                </span>
+                              </div>
+                            );
+                          } else {
+                            const rateToVND = getExchangeRate(c.code, 'VND');
+                            return (
+                              <div key={c.code} className="p-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-100 dark:border-slate-800/80 flex flex-col justify-between shadow-2xs">
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                  <span>{c.flag}</span> 1 {c.code}
+                                </span>
+                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">
+                                  ≈ {Math.round(rateToVND).toLocaleString('vi-VN')} ₫
+                                </span>
+                              </div>
+                            );
+                          }
                         })}
                       </div>
                     </div>
@@ -414,10 +565,10 @@ export function SettingsModal({
                 {activeTab === 'appearance' && (
                   <motion.div 
                     key="tab-appearance"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.16 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
                     className="space-y-4"
                   >
                     <div className="grid grid-cols-3 gap-3 pt-1">
@@ -480,11 +631,175 @@ export function SettingsModal({
                     </div>
                   </motion.div>
                 )}
+
+                {/* TAB 4: GOOGLE CALENDAR - REFACTORED CLEAN UI WITH MASTER ON/OFF TOGGLE */}
+                {activeTab === 'calendar' && (
+                  <motion.div 
+                    key="tab-calendar"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="space-y-3.5"
+                  >
+                    {/* Master Turn ON / OFF Switch Card */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700/60 shadow-xs">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs transition-colors",
+                            calendarConnected
+                              ? "bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-cyan-400 border-blue-500/20"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700"
+                          )}>
+                            <CalendarIcon className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                Đồng bộ Google Calendar
+                              </h4>
+                              {calendarConnected ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
+                                  <CheckCircle2 className="w-3 h-3" /> Đang bật
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium border border-slate-200 dark:border-slate-700">
+                                  Đang tắt
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              {calendarConnected 
+                                ? (user.email ? `Liên kết với ${user.email}` : 'Tự động tạo lịch nhắc chi tiêu cần đòi / hoàn tiền')
+                                : 'Bật để tự động nhắc lịch các khoản chi ứng trước trên Google Calendar'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Single Master Toggle Switch (Turn ON / OFF) */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {isConnectingCalendar && (
+                            <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />
+                          )}
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              disabled={isConnectingCalendar}
+                              checked={calendarConnected}
+                              onChange={(e) => handleToggleCalendar(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600 disabled:opacity-50"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Extended options only shown when ON */}
+                    {calendarConnected ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-3"
+                      >
+                        {/* 1. Default reminder lead time */}
+                        <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700/60 shadow-xs space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                              Thời gian hẹn nhắc hoàn tiền mặc định
+                            </h5>
+                            <span className="text-[11px] font-semibold text-blue-600 dark:text-cyan-400">
+                              Sau {settings.calendarReminderDays || 3} ngày
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-4 gap-2">
+                            {[
+                              { days: 3, label: '3 ngày' },
+                              { days: 5, label: '5 ngày' },
+                              { days: 7, label: '1 tuần' },
+                              { days: 14, label: '2 tuần' },
+                            ].map((opt) => {
+                              const isSelected = (settings.calendarReminderDays || 3) === opt.days;
+                              return (
+                                <button
+                                  key={opt.days}
+                                  type="button"
+                                  onClick={() => onUpdateSettings({ calendarReminderDays: opt.days })}
+                                  className={cn(
+                                    "py-2 px-1 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center",
+                                    isSelected
+                                      ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 border-blue-500 ring-1 ring-blue-500/20"
+                                      : "bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
+                                  )}
+                                >
+                                  {opt.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* 2. Batch Sync Pending Reimbursements */}
+                        {onSyncExpensesCalendar && (
+                          <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/80 to-indigo-50/60 dark:from-slate-800/80 dark:to-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                            <div>
+                              <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                                Đồng bộ khoản chi đang chờ
+                              </h5>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                                {expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length > 0
+                                  ? `Có ${expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length} khoản chi chờ hoàn tiền chưa lên lịch.`
+                                  : 'Tất cả các khoản chi hoàn tiền đã được đồng bộ lên Google Calendar.'}
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              disabled={isSyncingAll}
+                              onClick={async () => {
+                                try {
+                                  setIsSyncingAll(true);
+                                  const count = await onSyncExpensesCalendar();
+                                  if (count > 0) {
+                                    onShowNotification?.(`Đã đồng bộ ${count} khoản chi lên Google Calendar! 📅`);
+                                  } else {
+                                    onShowNotification?.('Tất cả các khoản chi hoàn tiền đã được đồng bộ từ trước.');
+                                  }
+                                } catch (e: any) {
+                                  onShowNotification?.(e?.message || 'Có lỗi khi đồng bộ lịch.', 'error');
+                                } finally {
+                                  setIsSyncingAll(false);
+                                }
+                              }}
+                              className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                            >
+                              <RefreshCw className={cn("w-3.5 h-3.5", isSyncingAll && "animate-spin")} />
+                              <span>{isSyncingAll ? 'Đang đồng bộ...' : 'Đồng bộ ngay'}</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* 3. Concise informative guidelines */}
+                        <div className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+                          <p className="font-bold text-slate-800 dark:text-slate-200">📌 Cách thức hoạt động:</p>
+                          <p>• Nhắc nhở qua thông báo vào 09:00 sáng ngày hẹn trên ứng dụng Google Calendar.</p>
+                          <p>• Khi bạn bấm [Đã nhận tiền] trong lịch sử, sự kiện Google Calendar sẽ tự động đổi thành [Đã hoàn tiền ✓].</p>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700 text-center py-6 text-xs text-slate-500 dark:text-slate-400">
+                        Tính năng đồng bộ lịch hiện đang tắt. Gạt công tắc sang Bật để tự động nhắc lịch các khoản chi cần hoàn tiền.
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </AnimatePresence>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 flex items-center justify-end">
+            <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 flex items-center justify-end shrink-0 z-10">
               <button
                 onClick={onClose}
                 className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer"

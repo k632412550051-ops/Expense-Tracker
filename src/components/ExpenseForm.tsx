@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS } from '../types';
-import { PlusCircle, Check } from 'lucide-react';
+import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
+import { PlusCircle, Check, Calendar as CalendarIcon, BellRing, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { calculateReminderDate } from '../lib/googleCalendar';
+import { PERSONA_CONFIGS } from '../lib/persona';
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
@@ -10,6 +12,7 @@ interface ExpenseFormProps {
   incomeCategories?: Category[];
   recentTransactions?: Expense[];
   baseCurrency?: CurrencyCode;
+  userPersona?: PersonaType;
 }
 
 export function ExpenseForm({ 
@@ -18,6 +21,7 @@ export function ExpenseForm({
   incomeCategories = [], 
   recentTransactions = [],
   baseCurrency = 'VND',
+  userPersona,
 }: ExpenseFormProps) {
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState<string>('');
@@ -31,8 +35,14 @@ export function ExpenseForm({
 
   const [date, setDate] = useState<string>(getLocalDateString());
   const [isReimbursable, setIsReimbursable] = useState<boolean>(false);
+  const [reminderDate, setReminderDate] = useState<string>(() => calculateReminderDate(getLocalDateString(), 3));
   const [note, setNote] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+
+  // When transaction date changes, automatically suggest reminder date +3 days
+  useEffect(() => {
+    setReminderDate(calculateReminderDate(date, 3));
+  }, [date]);
 
   // Extract recent unique notes for quick input
   const allUniqueNotes = useMemo(() => {
@@ -48,6 +58,12 @@ export function ExpenseForm({
       .filter(n => n.toLowerCase().includes(note.toLowerCase()) && n !== note)
       .slice(0, 5);
   }, [allUniqueNotes, note]);
+
+  // Persona quick suggestion pills
+  const personaSuggestions = useMemo(() => {
+    if (!userPersona || !PERSONA_CONFIGS[userPersona]) return [];
+    return PERSONA_CONFIGS[userPersona].quickNoteSuggestions || [];
+  }, [userPersona]);
 
   // Update default selected category if categories list changes
   useEffect(() => {
@@ -72,11 +88,13 @@ export function ExpenseForm({
         note,
         type,
         isReimbursable: type === 'expense' ? isReimbursable : false,
+        reimbursementReminderDate: (type === 'expense' && isReimbursable) ? reminderDate : undefined,
       });
 
       setAmount('');
       setNote('');
       setIsReimbursable(false);
+      setReminderDate(calculateReminderDate(date, 3));
     } catch (error) {
       console.error(error);
     }
@@ -236,29 +254,77 @@ export function ExpenseForm({
               ))}
             </div>
           )}
+
+          {/* Persona-driven quick note suggestion chips */}
+          {personaSuggestions.length > 0 && !note && (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <Zap className="w-2.5 h-2.5 text-amber-500" />
+                Gợi ý nhanh:
+              </span>
+              {personaSuggestions.slice(0, 4).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setNote(s)}
+                  className="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-[11px] font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-cyan-300 border border-slate-200/70 dark:border-slate-700/80 transition-colors cursor-pointer"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       <AnimatePresence initial={false}>
         {type === 'expense' && (
           <motion.div
-            key="reimbursable-checkbox"
+            key="reimbursable-checkbox-container"
             initial={{ opacity: 0, height: 0, y: -6 }}
             animate={{ opacity: 1, height: 'auto', y: 0 }}
             exit={{ opacity: 0, height: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center gap-2.5 mt-0.5 px-1 overflow-hidden"
+            className="flex flex-col gap-2 mt-0.5 px-1 overflow-hidden"
           >
-            <input
-              type="checkbox"
-              id="isReimbursable"
-              checked={isReimbursable}
-              onChange={(e) => setIsReimbursable(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
-            />
-            <label htmlFor="isReimbursable" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-              Chi ứng trước (cần đòi / hoàn lại)
-            </label>
+            <div className="flex items-center gap-2.5">
+              <input
+                type="checkbox"
+                id="isReimbursable"
+                checked={isReimbursable}
+                onChange={(e) => setIsReimbursable(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
+              />
+              <label htmlFor="isReimbursable" className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none flex items-center gap-1.5">
+                <span>Chi ứng trước (cần đòi / hoàn lại)</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/50 dark:border-blue-900/50">
+                  Google Calendar
+                </span>
+              </label>
+            </div>
+
+            {isReimbursable && (
+              <motion.div 
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-2xl bg-blue-50/50 dark:bg-slate-900/50 border border-blue-200/60 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+              >
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                  <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
+                  <span className="font-medium">Ngày hẹn hoàn tiền:</span>
+                  <input
+                    type="date"
+                    value={reminderDate}
+                    onChange={(e) => setReminderDate(e.target.value)}
+                    className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-blue-700 dark:text-cyan-300 font-medium">
+                  <BellRing className="w-3.5 h-3.5 shrink-0" />
+                  <span>Tự động đồng bộ lên Google Calendar</span>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

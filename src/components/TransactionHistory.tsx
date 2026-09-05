@@ -17,7 +17,8 @@ import {
   ArrowUpRight, 
   ArrowDownLeft,
   CalendarDays,
-  ShieldCheck
+  ShieldCheck,
+  ExternalLink
 } from 'lucide-react';
 
 interface TransactionHistoryProps {
@@ -30,6 +31,7 @@ interface TransactionHistoryProps {
   onToggleResolved: (expense: Expense) => void;
   onDeleteExpense: (id: string) => void;
   baseCurrency?: CurrencyCode;
+  onSyncCalendar?: (expense: Expense) => Promise<void>;
 }
 
 export function TransactionHistory({
@@ -41,7 +43,8 @@ export function TransactionHistory({
   categoryColors,
   onToggleResolved,
   onDeleteExpense,
-  baseCurrency = 'VND'
+  baseCurrency = 'VND',
+  onSyncCalendar
 }: TransactionHistoryProps) {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [filterCategory, setFilterCategory] = useState<string>('Tất cả');
@@ -583,17 +586,48 @@ export function TransactionHistory({
                             title={exp.category}
                           />
                           <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-bold text-slate-900 dark:text-white truncate">{exp.category}</span>
                               {exp.isReimbursable && (
-                                <span className={cn(
-                                  "text-[10px] px-2.5 py-0.5 rounded-full font-bold shrink-0 border",
-                                  exp.isResolved 
-                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
-                                    : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-                                )}>
-                                  {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
-                                </span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className={cn(
+                                    "text-[10px] px-2.5 py-0.5 rounded-full font-bold shrink-0 border",
+                                    exp.isResolved 
+                                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
+                                      : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                  )}>
+                                    {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
+                                  </span>
+
+                                  {exp.calendarEventId ? (
+                                    <a
+                                      href={exp.calendarEventLink || `https://calendar.google.com/calendar/u/0/r`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                                      title="Xem sự kiện nhắc nhở trên Google Calendar"
+                                    >
+                                      <CalendarIcon className="w-3 h-3" />
+                                      <span>Lịch Google</span>
+                                      <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                                    </a>
+                                  ) : (
+                                    onSyncCalendar && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onSyncCalendar(exp);
+                                        }}
+                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-cyan-300 font-medium border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                                        title="Đồng bộ vào Google Calendar"
+                                      >
+                                        <CalendarIcon className="w-3 h-3" />
+                                        <span>+ Đưa vào Lịch</span>
+                                      </button>
+                                    )
+                                  )}
+                                </div>
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -780,13 +814,38 @@ export function TransactionHistory({
                                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 break-words">{exp.note}</p>
                                 )}
                                 {exp.isReimbursable && (
-                                  <div className="flex items-center gap-1.5 mt-1.5">
+                                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                     <span className={cn(
                                       "text-[10px] px-2 py-0.5 rounded-full font-bold",
                                       exp.isResolved ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300" : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
                                     )}>
                                       {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
                                     </span>
+
+                                    {exp.calendarEventId ? (
+                                      <a
+                                        href={exp.calendarEventLink || `https://calendar.google.com/calendar/u/0/r`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60 hover:underline"
+                                        title="Xem trên Google Calendar"
+                                      >
+                                        <CalendarIcon className="w-2.5 h-2.5" />
+                                        <span>Lịch Google</span>
+                                        <ExternalLink className="w-2 h-2 opacity-60" />
+                                      </a>
+                                    ) : (
+                                      onSyncCalendar && (
+                                        <button
+                                          onClick={() => onSyncCalendar(exp)}
+                                          className="text-[10px] text-blue-600 dark:text-cyan-400 hover:underline font-bold cursor-pointer"
+                                          title="Đồng bộ vào Google Calendar"
+                                        >
+                                          + Đưa vào Lịch
+                                        </button>
+                                      )
+                                    )}
+
                                     <button
                                       onClick={() => onToggleResolved(exp)}
                                       className="text-[11px] text-blue-600 dark:text-cyan-400 hover:underline font-bold ml-1 cursor-pointer"

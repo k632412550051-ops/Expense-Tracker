@@ -29,6 +29,11 @@ import {
   Plane
 } from 'lucide-react';
 import { formatCurrency, setGlobalCurrency, setGlobalPrivacyMode } from './lib/utils';
+import { 
+  createCalendarReminderEvent, 
+  updateCalendarReminderEvent, 
+  deleteCalendarReminderEvent 
+} from './lib/googleCalendar';
 
 export default function App() {
   const { 
@@ -233,8 +238,29 @@ export default function App() {
   
   const handleAddExpense = async (newExpense: Omit<Expense, 'id'>) => {
     try {
-      await addExpense(newExpense);
+      const expenseId = await addExpense(newExpense);
       showNotification('Đã thêm giao dịch thành công!');
+
+      // Automatic Google Calendar sync for reimbursable expenses
+      if (newExpense.isReimbursable && expenseId && settings.calendarAutoSync !== false) {
+        try {
+          const fullExpense: Expense = {
+            ...newExpense,
+            id: expenseId
+          };
+          const syncResult = await createCalendarReminderEvent(fullExpense, settings.calendarReminderDays || 3);
+          if (syncResult?.eventId) {
+            await updateExpense(expenseId, {
+              calendarEventId: syncResult.eventId,
+              calendarEventLink: syncResult.htmlLink,
+              calendarSyncedAt: new Date().toISOString()
+            });
+            showNotification('Đã tạo sự kiện nhắc hoàn tiền trên Google Calendar! 📅');
+          }
+        } catch (calError: any) {
+          console.warn('Google Calendar auto-sync notice:', calError);
+        }
+      }
     } catch (error) {
       showNotification('Có lỗi xảy ra khi lưu giao dịch.', 'error');
     }
@@ -242,6 +268,14 @@ export default function App() {
 
   const executeRemoveExpense = async (id: string) => {
     try {
+      const targetExp = expenses.find(e => e.id === id);
+      if (targetExp?.calendarEventId) {
+        try {
+          await deleteCalendarReminderEvent(targetExp.calendarEventId);
+        } catch (calError) {
+          console.warn('Failed to delete calendar event:', calError);
+        }
+      }
       await deleteExpense(id);
       showNotification('Đã xóa giao dịch thành công!');
     } catch (error: any) {
@@ -258,15 +292,68 @@ export default function App() {
 
   const handleToggleResolved = async (expense: Expense) => {
     try {
-      await updateExpense(expense.id, { isResolved: !expense.isResolved });
-      if (!expense.isResolved) {
-         showNotification('Đã đánh dấu hoàn tiền thành công!');
+      const nextResolved = !expense.isResolved;
+      await updateExpense(expense.id, { isResolved: nextResolved });
+
+      // Synchronize update to Google Calendar event if present
+      if (expense.calendarEventId) {
+        try {
+          await updateCalendarReminderEvent(expense.calendarEventId, {
+            ...expense,
+            isResolved: nextResolved
+          });
+        } catch (calError) {
+          console.warn('Failed to update calendar event:', calError);
+        }
+      }
+
+      if (nextResolved) {
+         showNotification('Đã đánh dấu hoàn tiền thành công! (Đã cập nhật Lịch Google)');
       } else {
          showNotification('Đã bỏ đánh dấu hoàn tiền!');
       }
     } catch (error) {
       showNotification('Có lỗi xảy ra khi cập nhật.', 'error');
     }
+  };
+
+  const handleSyncCalendarExpense = async (expense: Expense) => {
+    try {
+      const syncResult = await createCalendarReminderEvent(expense, settings.calendarReminderDays || 3);
+      if (syncResult?.eventId) {
+        await updateExpense(expense.id, {
+          calendarEventId: syncResult.eventId,
+          calendarEventLink: syncResult.htmlLink,
+          calendarSyncedAt: new Date().toISOString()
+        });
+        showNotification('Đã đồng bộ lên Google Calendar thành công! 📅');
+      }
+    } catch (err: any) {
+      showNotification(err?.message || 'Không thể đồng bộ với Google Calendar', 'error');
+    }
+  };
+
+  const handleSyncAllCalendarExpenses = async (): Promise<number> => {
+    const pendingExpenses = expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved);
+    if (pendingExpenses.length === 0) return 0;
+    
+    let successCount = 0;
+    for (const exp of pendingExpenses) {
+      try {
+        const syncResult = await createCalendarReminderEvent(exp, settings.calendarReminderDays || 3);
+        if (syncResult?.eventId) {
+          await updateExpense(exp.id, {
+            calendarEventId: syncResult.eventId,
+            calendarEventLink: syncResult.htmlLink,
+            calendarSyncedAt: new Date().toISOString()
+          });
+          successCount++;
+        }
+      } catch (err) {
+        console.warn(`Failed to sync expense ${exp.id} to calendar:`, err);
+      }
+    }
+    return successCount;
   };
   
   const currentMonthTransactions = useMemo(() => {
@@ -631,6 +718,7 @@ export default function App() {
             incomeCategories={incomeCategories} 
             recentTransactions={expenses}
             baseCurrency={settings.currency}
+            userPersona={userProfile.persona}
           />
           <BudgetAlertsWidget 
             expenses={currentMonthExpensesList} 
@@ -654,6 +742,7 @@ export default function App() {
             baseCurrency={settings.currency}
             onToggleResolved={handleToggleResolved}
             onDeleteExpense={handleRemoveExpense}
+            onSyncCalendar={handleSyncCalendarExpense}
           />
         </div>
 
@@ -702,6 +791,9 @@ export default function App() {
         onUpdateProfile={updateUserProfile}
         onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
         onLogout={logout}
+        expenses={expenses}
+        onSyncExpensesCalendar={handleSyncAllCalendarExpenses}
+        onShowNotification={showNotification}
       />
 
       {/* Onboarding for Authenticated User if not yet onboarded */}
