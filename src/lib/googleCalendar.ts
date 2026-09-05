@@ -286,3 +286,80 @@ export async function deleteCalendarReminderEvent(eventId: string): Promise<void
     console.warn('Could not delete Google Calendar event:', err);
   }
 }
+
+/**
+ * Generate a direct 1-click Google Calendar web creation URL.
+ * Works 100% reliably for ALL Google accounts without requiring any OAuth permissions or verification!
+ */
+export function createGoogleCalendarUrl(expense: Expense, reminderDays: number = 3): string {
+  const reminderDateStr = expense.reimbursementReminderDate || calculateReminderDate(expense.date, reminderDays);
+  // YYYYMMDD format for all-day events
+  const cleanDate = reminderDateStr.replace(/-/g, '');
+  const formattedAmount = formatCurrency(expense.amount, expense.currency);
+  const statusText = expense.isResolved ? 'Đã hoàn tiền ✓' : 'Chờ hoàn tiền';
+  
+  const text = encodeURIComponent(
+    expense.isResolved 
+      ? `[Đã hoàn tiền ✓] ${expense.note || expense.category} - ${formattedAmount}`
+      : `[Nhắc hoàn tiền] ${expense.note || expense.category} - ${formattedAmount}`
+  );
+  
+  const details = encodeURIComponent(
+    `💰 THÔNG TIN KHOẢN TIỀN CẦN HOÀN:\n` +
+    `• Số tiền: ${formattedAmount}\n` +
+    `• Danh mục: ${expense.category}\n` +
+    `• Ghi chú: ${expense.note || '(Không có)'}\n` +
+    `• Ngày chi: ${expense.date}\n` +
+    `• Trạng thái: ${statusText}\n\n` +
+    `Tạo từ Expense Tracker Liquid Glass.`
+  );
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${cleanDate}/${cleanDate}&details=${details}`;
+}
+
+/**
+ * Download a standard .ics calendar file for Apple Calendar, Google Calendar, Outlook, etc.
+ */
+export function downloadICalendarFile(expense: Expense, reminderDays: number = 3): void {
+  const reminderDateStr = expense.reimbursementReminderDate || calculateReminderDate(expense.date, reminderDays);
+  const cleanDate = reminderDateStr.replace(/-/g, '');
+  const formattedAmount = formatCurrency(expense.amount, expense.currency);
+  const statusText = expense.isResolved ? 'Đã hoàn tiền ✓' : 'Chờ hoàn tiền';
+  const summary = expense.isResolved 
+    ? `[Đã hoàn tiền] ${expense.note || expense.category} - ${formattedAmount}`
+    : `[Nhắc hoàn tiền] ${expense.note || expense.category} - ${formattedAmount}`;
+
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Expense Tracker Liquid Glass//VI',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:expense-${expense.id}-${Date.now()}@expensetracker.app`,
+    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+    `DTSTART;VALUE=DATE:${cleanDate}`,
+    `DTEND;VALUE=DATE:${cleanDate}`,
+    `SUMMARY:${summary}`,
+    `DESCRIPTION:So tien: ${formattedAmount}\\nDanh muc: ${expense.category}\\nGhi chu: ${expense.note || ''}\\nTrang thai: ${statusText}`,
+    'STATUS:CONFIRMED',
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Nhắc nhở hoàn tiền chi tiêu',
+    'TRIGGER:-PT9H',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `remind-reimburse-${cleanDate}.ics`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+

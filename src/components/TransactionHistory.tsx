@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   ExternalLink
 } from 'lucide-react';
+import { createGoogleCalendarUrl } from '../lib/googleCalendar';
 
 interface TransactionHistoryProps {
   expenses: Expense[];
@@ -613,19 +614,18 @@ export function TransactionHistory({
                                       <ExternalLink className="w-2.5 h-2.5 opacity-60" />
                                     </a>
                                   ) : (
-                                    onSyncCalendar && (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          onSyncCalendar(exp);
-                                        }}
-                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-slate-100 hover:bg-blue-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-cyan-300 font-medium border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-                                        title="Đồng bộ vào Google Calendar"
-                                      >
-                                        <CalendarIcon className="w-3 h-3" />
-                                        <span>+ Đưa vào Lịch</span>
-                                      </button>
-                                    )
+                                    <a
+                                      href={createGoogleCalendarUrl(exp)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
+                                      title="Mở Google Calendar để thêm sự kiện (1-chạm, không cần cấp quyền)"
+                                    >
+                                      <CalendarIcon className="w-2.5 h-2.5" />
+                                      <span>+ Thêm Lịch Google</span>
+                                      <ExternalLink className="w-2 h-2 opacity-60" />
+                                    </a>
                                   )}
                                 </div>
                               )}
@@ -835,15 +835,17 @@ export function TransactionHistory({
                                         <ExternalLink className="w-2 h-2 opacity-60" />
                                       </a>
                                     ) : (
-                                      onSyncCalendar && (
-                                        <button
-                                          onClick={() => onSyncCalendar(exp)}
-                                          className="text-[10px] text-blue-600 dark:text-cyan-400 hover:underline font-bold cursor-pointer"
-                                          title="Đồng bộ vào Google Calendar"
-                                        >
-                                          + Đưa vào Lịch
-                                        </button>
-                                      )
+                                      <a
+                                        href={createGoogleCalendarUrl(exp)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-cyan-400 hover:underline font-bold cursor-pointer"
+                                        title="Mở Google Calendar để thêm sự kiện (1-chạm)"
+                                      >
+                                        <CalendarIcon className="w-2.5 h-2.5" />
+                                        <span>+ Thêm Lịch</span>
+                                        <ExternalLink className="w-2 h-2 opacity-60" />
+                                      </a>
                                     )}
 
                                     <button
