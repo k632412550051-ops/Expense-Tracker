@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Expense, getCategoryColor } from '../types';
 import { formatCurrency } from '../lib/utils';
@@ -10,6 +10,12 @@ interface PieChartWidgetProps {
 }
 
 export function PieChartWidget({ expenses, title = "Cơ cấu chi tiêu tháng này", categoryColors }: PieChartWidgetProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const data = useMemo(() => {
     const sums: Record<string, number> = {};
 
@@ -41,48 +47,50 @@ export function PieChartWidget({ expenses, title = "Cơ cấu chi tiêu tháng n
       <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
       <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-2 truncate tracking-tight" title={title}>{title}</h2>
       <div className="flex-1 w-full relative min-h-[250px]" style={{ minWidth: 0 }}>
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={50}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius="55%"
-              outerRadius="75%"
-              paddingAngle={3}
-              dataKey="value"
-              label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, fill }) => {
-                const RADIAN = Math.PI / 180;
-                const radius = outerRadius * 1.2;
-                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                return (
-                  <text x={x} y={y} fill={fill} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="13px" fontWeight="600">
-                    {`${(percent * 100).toFixed(0)}%`}
-                  </text>
-                );
-              }}
-              labelLine={{ stroke: '#94a3b8', strokeWidth: 1, strokeOpacity: 0.6 }}
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip 
-              formatter={(value: number) => formatCurrency(value)}
-              contentStyle={{ 
-                borderRadius: '16px', 
-                background: 'rgba(15, 23, 42, 0.85)', 
-                backdropFilter: 'blur(12px)', 
-                border: '1px solid rgba(255, 255, 255, 0.15)', 
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)',
-                color: '#f8fafc'
-              }}
-              itemStyle={{ color: '#f8fafc' }}
-              labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        {isMounted && (
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius="55%"
+                outerRadius="75%"
+                paddingAngle={3}
+                dataKey="value"
+                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, fill }) => {
+                  const RADIAN = Math.PI / 180;
+                  const radius = outerRadius * 1.2;
+                  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                  return (
+                    <text x={x} y={y} fill={fill} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="13px" fontWeight="600">
+                      {`${(percent * 100).toFixed(0)}%`}
+                    </text>
+                  );
+                }}
+                labelLine={{ stroke: '#94a3b8', strokeWidth: 1, strokeOpacity: 0.6 }}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value: number) => formatCurrency(value)}
+                contentStyle={{ 
+                  borderRadius: '16px', 
+                  background: 'rgba(15, 23, 42, 0.85)', 
+                  backdropFilter: 'blur(12px)', 
+                  border: '1px solid rgba(255, 255, 255, 0.15)', 
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)',
+                  color: '#f8fafc'
+                }}
+                itemStyle={{ color: '#f8fafc' }}
+                labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
       
       {/* Custom Legend */}
