@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker - Smart Personal Budget & Expense Management</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --text: #0f172a;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --muted: #64748b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text: #f8fafc;
+        --bg: #0b0f19;
+        --card-bg: #131b2e;
+        --border: #232f48;
+        --muted: #94a3b8;
+      }
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 20px;
+      transition: color 0.15s;
+    }
+    .nav a:hover {
+      color: var(--primary);
+    }
+    .hero {
+      max-width: 900px;
+      margin: 60px auto 40px;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #eff6ff;
+      color: #2563eb;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin: 0 0 16px;
+      line-height: 1.2;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 650px;
+      margin: 0 auto 32px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: background 0.15s, transform 0.15s;
+    }
+    .cta-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+    .features {
+      max-width: 1000px;
+      margin: 60px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .card h3 {
+      font-size: 18px;
+      margin: 0 0 8px;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0;
+    }
+    .footer {
+      border-top: 1px solid var(--border);
+      background: var(--card-bg);
+      padding: 32px 20px;
+      margin-top: 80px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 12px;
+    }
+    .footer-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/" class="logo">📊 Expense Tracker</a>
+    <div class="nav">
+      <a href="/">Ứng dụng</a>
+      <a href="/privacy.html">Chính sách bảo mật</a>
+      <a href="/terms.html">Điều khoản dịch vụ</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <span class="badge">Trang thông tin chính thức</span>
+    <h1>Quản lý Chi tiêu & Ngân sách Thông minh</h1>
+    <p class="subtitle">
+      Theo dõi dòng tiền thu chi, lập hạn mức ngân sách theo danh mục, quy đổi đa tiền tệ theo thời gian thực và quản lý các khoản chi hộ với lịch nhắc hoàn tiền tiện lợi.
+    </p>
+    <a href="/" class="cta-btn">Mở Ứng Dụng Expense Tracker →</a>
+  </div>
+
+  <div class="features">
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Theo dõi Thu & Chi Tức thì</h3>
+      <p>Ghi nhận nhanh chóng các giao dịch hàng ngày với danh mục tùy biến, hiển thị biểu đồ phân tích cơ cấu chi tiêu trực quan.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3>Cảnh báo Hạn mức Ngân sách</h3>
+      <p>Đặt ngân sách theo từng danh mục (Ăn uống, Đi lại, Nhà cửa...) với thanh tiến độ màu sắc thông minh giúp bạn kiểm soát chi tiêu.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <h3>Quản lý Chi hộ & Lịch Google</h3>
+      <p>Đánh dấu khoản chi ứng trước cho bạn bè/đồng nghiệp và tạo lịch nhắc hẹn hoàn tiền trực tiếp trên Google Calendar chỉ với 1 thao tác.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💱</div>
+      <h3>Đa Tiền tệ & Tỷ giá Trực tiếp</h3>
+      <p>Hỗ trợ đầy đủ VND, USD, EUR, JPY, GBP, KRW, SGD với tỷ giá tự động cập nhật và quy đổi tức thì.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <h3>Bảo mật & Quyền riêng tư Cao</h3>
+      <p>Chế độ ẩn số dư (Privacy Mode) giúp an tâm mở app nơi đông người. Dữ liệu được bảo vệ an toàn trên nền tảng Google Firebase.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">☁️</div>
+      <h3>Đồng bộ Đa thiết bị</h3>
+      <p>Đăng nhập an toàn qua tài khoản Google để đồng bộ dữ liệu mượt mà giữa điện thoại, máy tính bảng và máy tính cá nhân.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-links">
+      <a href="/">Mở Ứng dụng</a>
+      <a href="/privacy.html">Chính sách Quyền riêng tư (Privacy Policy)</a>
+      <a href="/terms.html">Điều khoản Dịch vụ (Terms of Service)</a>
+    </div>
+    <p>Expense Tracker • Phát triển bởi: <strong>k63.2412550051@ftu.edu.vn</strong> • Dự án học tập & quản lý tài chính cá nhân</p>
+  </div>
+</body>
+</html>

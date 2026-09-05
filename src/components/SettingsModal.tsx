@@ -799,7 +799,35 @@ export function SettingsModal({
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 flex items-center justify-end shrink-0 z-10">
+            <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 flex flex-wrap items-center justify-between gap-3 shrink-0 z-10">
+              <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <a
+                  href="/about.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
+                >
+                  Giới thiệu
+                </a>
+                <span>•</span>
+                <a
+                  href="/privacy.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
+                >
+                  Chính sách quyền riêng tư
+                </a>
+                <span>•</span>
+                <a
+                  href="/terms.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
+                >
+                  Điều khoản
+                </a>
+              </div>
               <button
                 onClick={onClose}
                 className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer"

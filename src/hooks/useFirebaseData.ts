@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, query, orderBy, getDocs, where, writeBatch } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { 
   Expense, 
@@ -43,6 +43,20 @@ export function useFirebaseData() {
       return;
     }
 
+    // 1. Immediately hydrate from local backup if available so data is never blank
+    const backupKey = `expense_tracker_backup_${user.uid}`;
+    try {
+      const cached = localStorage.getItem(backupKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setExpenses(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read local backup:", e);
+    }
+
     const userRef = doc(db, 'users', user.uid);
 
     const unsubUser = onSnapshot(userRef, (snapshot) => {
@@ -80,8 +94,9 @@ export function useFirebaseData() {
        setLoading(false);
     });
 
-    const expensesQ = query(collection(db, 'users', user.uid, 'expenses'), orderBy('date', 'desc'));
-    const unsubExpenses = onSnapshot(expensesQ, (snapshot) => {
+    // 2. Fetch expenses without restrictive server-side orderBy (which fails if any doc lacks date field)
+    const expensesCol = collection(db, 'users', user.uid, 'expenses');
+    const unsubExpenses = onSnapshot(expensesCol, async (snapshot) => {
       const exps: Expense[] = [];
       snapshot.forEach((d) => {
         const data = d.data();
@@ -92,8 +107,8 @@ export function useFirebaseData() {
           exchangeRate: data.exchangeRate,
           convertedAmount: data.convertedAmount,
           category: data.category,
-          date: data.date,
-          note: data.note,
+          date: data.date || '',
+          note: data.note || '',
           type: data.type || 'expense',
           isReimbursable: data.isReimbursable || false,
           isResolved: data.isResolved || false,
@@ -103,9 +118,125 @@ export function useFirebaseData() {
           reimbursementReminderDate: data.reimbursementReminderDate,
         });
       });
-      setExpenses(exps);
+
+      // Sort client-side safely by date descending
+      exps.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      // If user has expenses in Firestore, update state and backup to localStorage
+      if (exps.length > 0) {
+        setExpenses(exps);
+        try {
+          localStorage.setItem(backupKey, JSON.stringify(exps));
+        } catch (e) {
+          console.warn("Could not write local backup:", e);
+        }
+      } else {
+        // 3. Fallback recovery: If Firestore subcollection has 0 items, check potential legacy stores
+        try {
+          let recovered: Expense[] = [];
+          
+          // Check common localStorage keys from earlier offline/local sessions
+          const potentialKeys = ['expenses', 'expense_tracker_expenses', 'local_expenses', 'transactions', 'user_expenses'];
+          for (const key of potentialKeys) {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].amount !== undefined) {
+                  recovered = parsed;
+                  break;
+                }
+              } catch (_) {}
+            }
+          }
+
+          // Check if any other user backup exists in localStorage
+          if (recovered.length === 0) {
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && k.startsWith('expense_tracker_backup_')) {
+                const raw = localStorage.getItem(k);
+                if (raw) {
+                  try {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                      recovered = parsed;
+                      break;
+                    }
+                  } catch (_) {}
+                }
+              }
+            }
+          }
+
+          // Check root collection /expenses for any documents belonging to this user
+          if (recovered.length === 0) {
+            try {
+              const rootCol = collection(db, 'expenses');
+              const q = query(rootCol, where('userId', '==', user.uid));
+              const rootSnap = await getDocs(q);
+              if (!rootSnap.empty) {
+                rootSnap.forEach((d) => {
+                  const data = d.data();
+                  recovered.push({
+                    id: d.id,
+                    amount: data.amount,
+                    currency: data.currency,
+                    exchangeRate: data.exchangeRate,
+                    convertedAmount: data.convertedAmount,
+                    category: data.category,
+                    date: data.date || '',
+                    note: data.note || '',
+                    type: data.type || 'expense',
+                    isReimbursable: data.isReimbursable || false,
+                    isResolved: data.isResolved || false,
+                  });
+                });
+              }
+            } catch (rootErr) {
+              console.warn("Root collection check notice:", rootErr);
+            }
+          }
+
+          // If recovered items found, automatically restore them to user's Firestore subcollection!
+          if (recovered.length > 0) {
+            console.log(`Recovered ${recovered.length} legacy expenses. Restoring to Firestore...`);
+            setExpenses(recovered);
+            localStorage.setItem(backupKey, JSON.stringify(recovered));
+
+            // Seamlessly migrate to Firestore
+            for (const item of recovered) {
+              try {
+                const ref = doc(collection(db, 'users', user.uid, 'expenses'));
+                const { id, ...cleanItem } = item;
+                await setDoc(ref, {
+                  ...cleanItem,
+                  createdAt: new Date().toISOString()
+                });
+              } catch (importErr) {
+                console.warn("Failed to migrate recovered item:", importErr);
+              }
+            }
+          } else {
+            setExpenses([]);
+          }
+        } catch (recoverErr) {
+          console.warn("Recovery scan notice:", recoverErr);
+          setExpenses([]);
+        }
+      }
     }, (error) => {
       console.error("Error fetching expenses", error);
+      // Even on error, do NOT wipe out user data if local backup is present
+      const cached = localStorage.getItem(backupKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setExpenses(parsed);
+          }
+        } catch (_) {}
+      }
     });
 
     return () => {

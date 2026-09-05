@@ -8,5 +8,9 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
+    // Backwards-compatibility for root expenses collection
+    match /expenses/{expenseId} {
+      allow read, write: if request.auth != null;
+    }
   }
 }

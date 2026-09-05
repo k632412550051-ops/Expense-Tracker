@@ -209,6 +209,7 @@ export default function App() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isGuestPreview, setIsGuestPreview] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
@@ -423,7 +424,7 @@ export default function App() {
      );
   }
 
-  if (!user) {
+  if (!user && !isGuestPreview) {
       return (
           <div className="min-h-screen liquid-glass-canvas flex items-center justify-center p-4 relative overflow-hidden">
               {/* Background ambient orbs */}
@@ -480,6 +481,46 @@ export default function App() {
                       )}
                       <span>{isLoggingIn ? 'Đang xác thực...' : 'Đã có tài khoản? Đăng nhập ngay'}</span>
                   </button>
+
+                  {/* Public preview without login (fixes Google OAuth verification requirement) */}
+                  <button 
+                     type="button"
+                     onClick={() => setIsGuestPreview(true)}
+                     className="w-full mt-3 py-2.5 px-4 rounded-2xl text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/80 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                     <Eye className="w-3.5 h-3.5" />
+                     <span>Xem thử tính năng ứng dụng (Không cần đăng nhập)</span>
+                  </button>
+
+                  {/* Public Legal & App info links */}
+                  <div className="mt-5 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+                    <a 
+                      href="/about.html" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
+                    >
+                      Giới thiệu ứng dụng
+                    </a>
+                    <span>•</span>
+                    <a 
+                      href="/privacy.html" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
+                    >
+                      Chính sách quyền riêng tư
+                    </a>
+                    <span>•</span>
+                    <a 
+                      href="/terms.html" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
+                    >
+                      Điều khoản
+                    </a>
+                  </div>
               </div>
 
               {/* Onboarding Modal Overlay */}
@@ -502,6 +543,27 @@ export default function App() {
       <div className="fixed top-[-80px] right-[-80px] w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] rounded-full bg-gradient-to-br from-blue-400/25 via-sky-300/20 to-transparent dark:from-blue-600/40 dark:via-cyan-400/25 dark:to-transparent blur-[100px] pointer-events-none -z-10" />
       <div className="fixed top-[40%] left-[-120px] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full bg-gradient-to-tr from-cyan-400/20 via-blue-500/15 to-transparent dark:from-indigo-500/35 dark:via-blue-600/25 dark:to-transparent blur-[120px] pointer-events-none -z-10" />
       <div className="fixed bottom-[-60px] right-[15%] w-[400px] sm:w-[550px] h-[400px] sm:h-[550px] rounded-full bg-indigo-500/15 dark:bg-sky-500/25 blur-[100px] pointer-events-none -z-10" />
+
+      {/* Guest Preview Notification Banner */}
+      {!user && isGuestPreview && (
+        <div className="relative z-40 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 text-xs font-semibold flex flex-wrap items-center justify-between gap-2 shadow-md">
+          <div className="flex items-center gap-2">
+            <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider">Xem trước công khai</span>
+            <span>Bạn đang xem thử giao diện ứng dụng Expense Tracker mà không cần đăng nhập.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-100 text-[11px]">
+              Chính sách bảo mật
+            </a>
+            <button
+              onClick={() => setIsGuestPreview(false)}
+              className="bg-white text-blue-700 hover:bg-blue-50 px-3 py-1 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ml-2"
+            >
+              Đăng nhập tài khoản
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="liquid-glass sticky top-0 z-30 border-b border-white/80 dark:border-white/15 shadow-md shadow-blue-950/5">
