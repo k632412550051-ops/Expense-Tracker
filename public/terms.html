@@ -5,141 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Terms of Service - Expense Tracker</title>
   <style>
-    :root {
-      --primary: #2563eb;
-      --text: #1e293b;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --muted: #64748b;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --text: #f1f5f9;
-        --bg: #0f172a;
-        --card-bg: #1e293b;
-        --border: #334155;
-        --muted: #94a3b8;
-      }
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.65;
-      margin: 0;
-      padding: 32px 16px;
-    }
-    .container {
-      max-width: 840px;
-      margin: 0 auto;
-      background: var(--card-bg);
-      padding: 40px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
-    }
-    h1 {
-      font-size: 30px;
-      margin-top: 0;
-      color: var(--primary);
-    }
-    h2 {
-      font-size: 20px;
-      margin-top: 32px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-    }
-    p, li {
-      color: var(--text);
-    }
-    .meta {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      background: #eff6ff;
-      color: #2563eb;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 12px;
-    }
-    ul {
-      padding-left: 24px;
-    }
-    li {
-      margin-bottom: 8px;
-    }
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 32px;
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-      padding: 10px 18px;
-      background: #eff6ff;
-      border-radius: 10px;
-      transition: background 0.15s;
-    }
-    .back-btn:hover {
-      background: #dbeafe;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 32px 16px; line-height: 1.6; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 16px; }
+    h1 { color: #2563eb; }
   </style>
 </head>
 <body>
   <div class="container">
-    <span class="badge">Official Terms</span>
-    <h1>Điều khoản Dịch vụ / Terms of Service</h1>
-    <p class="meta">
-      <strong>Ứng dụng (Application):</strong> Expense Tracker | 
-      <strong>Nhà phát triển (Developer):</strong> k63.2412550051@ftu.edu.vn | 
-      <strong>Cập nhật lần cuối:</strong> Tháng 9, 2026
-    </p>
-
-    <h2>1. Chấp nhận các điều khoản (Acceptance of Terms)</h2>
-    <p>
-      Bằng việc truy cập hoặc sử dụng ứng dụng <strong>Expense Tracker</strong>, bạn xác nhận rằng bạn đã đọc, hiểu và đồng ý bị ràng buộc bởi các Điều khoản dịch vụ này. Nếu bạn không đồng ý với bất kỳ điều khoản nào, vui lòng không tiếp tục sử dụng ứng dụng.
-    </p>
-
-    <h2>2. Mô tả dịch vụ (Description of Service)</h2>
-    <p>
-      Expense Tracker là một ứng dụng hỗ trợ quản lý tài chính cá nhân, cho phép người dùng ghi chép chi tiêu, thu nhập, lập ngân sách định kỳ, theo dõi tỷ giá đa tiền tệ và tùy chọn tạo nhắc nhở hoàn tiền trên lịch cá nhân thông qua dịch vụ đám mây của Google Firebase.
-    </p>
-
-    <h2>3. Tài khoản và Trách nhiệm người dùng (Account & Responsibilities)</h2>
-    <ul>
-      <li>Bạn chịu trách nhiệm bảo mật thông tin đăng nhập tài khoản Google của mình khi sử dụng ứng dụng.</li>
-      <li>Bạn đồng ý cung cấp thông tin chính xác và không sử dụng ứng dụng cho các mục đích vi phạm pháp luật hoặc xâm phạm quyền lợi của người khác.</li>
-      <li>Ứng dụng dành cho mục đích theo dõi tài chính cá nhân và tham khảo, không cấu thành dịch vụ tư vấn đầu tư tài chính chuyên nghiệp.</li>
-    </ul>
-
-    <h2>4. Quyền sở hữu trí tuệ (Intellectual Property)</h2>
-    <p>
-      Toàn bộ giao diện, thiết kế, mã nguồn và biểu trưng thương hiệu của Expense Tracker thuộc sở hữu của nhà phát triển. Người dùng giữ toàn quyền sở hữu đối với nội dung và dữ liệu chi tiêu cá nhân do chính mình nhập vào ứng dụng.
-    </p>
-
-    <h2>5. Giới hạn trách nhiệm (Limitation of Liability)</h2>
-    <p>
-      Ứng dụng được cung cấp trên cơ sở "nguyên trạng" (as is). Mặc dù chúng tôi luôn nỗ lực duy trì tính sẵn sàng và chính xác cao nhất, chúng tôi không chịu trách nhiệm đối với bất kỳ sự cố gián đoạn dịch vụ, tổn thất dữ liệu do lỗi mạng viễn thông hoặc quyết định tài chính cá nhân của người dùng dựa trên số liệu trong ứng dụng.
-    </p>
-
-    <h2>6. Thay đổi điều khoản (Modifications)</h2>
-    <p>
-      Chúng tôi có quyền điều chỉnh các điều khoản này khi cần thiết để phù hợp với quy định pháp luật và nâng cấp tính năng. Mọi thay đổi sẽ được công bố trực tiếp trên trang này.
-    </p>
-
-    <h2>7. Thông tin liên hệ (Contact)</h2>
-    <p>Mọi câu hỏi liên quan đến Điều khoản Dịch vụ xin vui lòng gửi về email: <strong>k63.2412550051@ftu.edu.vn</strong>.</p>
-
-    <div style="display: flex; gap: 12px; margin-top: 32px;">
-      <a href="/" class="back-btn">← Quay lại Ứng dụng</a>
-      <a href="/privacy.html" class="back-btn" style="background: #f1f5f9; color: var(--text);">Chính sách quyền riêng tư →</a>
-    </div>
+    <h1>Điều khoản Dịch vụ - Expense Tracker</h1>
+    <p>Ứng dụng Expense Tracker cung cấp công cụ theo dõi tài chính cá nhân. Bằng việc truy cập ứng dụng, người dùng đồng ý tuân thủ các quy tắc bảo mật và trách nhiệm cá nhân đối với dữ liệu của mình.</p>
+    <p><a href="about.html">← Quay lại trang thông tin Expense Tracker</a></p>
   </div>
 </body>
 </html>
