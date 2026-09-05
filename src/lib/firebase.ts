@@ -11,16 +11,8 @@ export const auth = getAuth(app);
 
 export const loginWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
-  // Request Calendar Events scope so users can automatically sync reimbursement reminders
-  provider.addScope('https://www.googleapis.com/auth/calendar.events');
   try {
     const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (credential?.accessToken) {
-      sessionStorage.setItem('google_calendar_token', credential.accessToken);
-      localStorage.setItem('google_calendar_token', credential.accessToken);
-      localStorage.setItem('google_calendar_connected', 'true');
-    }
     return result;
   } catch (error) {
     console.error("Error signing in with Google", error);

@@ -77,6 +77,12 @@ export async function connectGoogleCalendar(): Promise<string> {
     return token;
   } catch (error: any) {
     console.error('Error connecting Google Calendar:', error);
+    if (error?.message?.includes('access_denied') || error?.code === 'auth/access-denied') {
+      throw new Error('Tài khoản này chưa nằm trong danh sách Test Users của Google Cloud (Lỗi 403: access_denied). Bạn có thể thêm email vào Google Cloud Console hoặc dùng app mà không cần đồng bộ Lịch.');
+    }
+    if (error?.code === 'auth/popup-closed-by-user') {
+      throw new Error('Cửa sổ xác thực Google đã bị đóng trước khi hoàn tất.');
+    }
     throw error;
   }
 }
