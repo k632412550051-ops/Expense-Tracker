@@ -21,9 +21,9 @@
     <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- iPhone / iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Expenses" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-title" content="Expenses" />
 
     <!-- Theme -->
     <meta name="theme-color" content="#ffffff" />
@@ -32,28 +32,6 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
   </head>
   <body class="font-sans antialiased text-slate-900 selection:bg-blue-500 selection:text-white">
-    <!-- Cấu hình Google Sign-In -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<script>
-  function handleCredentialResponse(response) {
-    const base64Url = response.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    const userInfo = JSON.parse(jsonPayload);
-    console.log("Đã đăng nhập thành công:", userInfo);
-    alert("Xin chào " + userInfo.name + " (" + userInfo.email + ")");
-  }
-</script>
-
-<div id="g_id_onload"
-     data-client_id="420848103747-c8l3s072p9tiltk64tkbdu73h7br1dn3.apps.googleusercontent.com"
-     data-callback="handleCredentialResponse">
-</div>
-<div class="g_id_signin" data-type="standard"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
