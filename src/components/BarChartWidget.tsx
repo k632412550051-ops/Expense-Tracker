@@ -56,7 +56,7 @@ export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND'
       <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-1 tracking-tight">Chi tiêu 6 tháng gần nhất</h2>
       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-3">Xu hướng biến động chi tiêu theo thời gian</p>
       <div className="flex-1 w-full" style={{ minWidth: 0 }}>
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={50}>
           <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
