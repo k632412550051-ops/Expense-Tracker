@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Expense, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
@@ -23,6 +23,11 @@ export function CombinedPieChartWidget({
   baseCurrency = 'VND'
 }: CombinedPieChartWidgetProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'previous'>('current');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const activeExpenses = selectedPeriod === 'current' ? currentMonthExpenses : previousMonthExpenses;
   const activeLabel = selectedPeriod === 'current' ? currentMonthLabel : previousMonthLabel;
@@ -105,57 +110,59 @@ export function CombinedPieChartWidget({
         </div>
       ) : (
         <>
-         <div className="flex-1 w-full relative min-h-[240px]" style={{ minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200} debounce={50}>
-              <PieChart>
-                <Pie
-                  data={data}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius="52%"
-                  outerRadius="75%"
-                  paddingAngle={3}
-                  dataKey="value"
-                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, fill }) => {
-                    const RADIAN = Math.PI / 180;
-                    const radius = outerRadius * 1.2;
-                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                    return (
-                      <text 
-                        x={x} 
-                        y={y} 
-                        fill={fill} 
-                        textAnchor={x > cx ? 'start' : 'end'} 
-                        dominantBaseline="central" 
-                        fontSize="12px" 
-                        fontWeight="700"
-                      >
-                        {`${(percent * 100).toFixed(0)}%`}
-                      </text>
-                    );
-                  }}
-                  labelLine={{ stroke: '#94a3b8', strokeWidth: 1, strokeOpacity: 0.6 }}
-                >
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: number) => [formatCurrency(value, baseCurrency), 'Đã chi']}
-                  contentStyle={{ 
-                    borderRadius: '16px', 
-                    background: 'rgba(15, 23, 42, 0.85)', 
-                    backdropFilter: 'blur(12px)', 
-                    border: '1px solid rgba(255, 255, 255, 0.15)', 
-                    color: '#f8fafc',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)' 
-                  }}
-                  itemStyle={{ color: '#f8fafc' }}
-                  labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="flex-1 w-full relative min-h-[240px]" style={{ minWidth: 0 }}>
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="52%"
+                    outerRadius="75%"
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, fill }) => {
+                      const RADIAN = Math.PI / 180;
+                      const radius = outerRadius * 1.2;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                      return (
+                        <text 
+                          x={x} 
+                          y={y} 
+                          fill={fill} 
+                          textAnchor={x > cx ? 'start' : 'end'} 
+                          dominantBaseline="central" 
+                          fontSize="12px" 
+                          fontWeight="700"
+                        >
+                          {`${(percent * 100).toFixed(0)}%`}
+                        </text>
+                      );
+                    }}
+                    labelLine={{ stroke: '#94a3b8', strokeWidth: 1, strokeOpacity: 0.6 }}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number) => [formatCurrency(value, baseCurrency), 'Đã chi']}
+                    contentStyle={{ 
+                      borderRadius: '16px', 
+                      background: 'rgba(15, 23, 42, 0.85)', 
+                      backdropFilter: 'blur(12px)', 
+                      border: '1px solid rgba(255, 255, 255, 0.15)', 
+                      color: '#f8fafc',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.25)' 
+                    }}
+                    itemStyle={{ color: '#f8fafc' }}
+                    labelStyle={{ color: '#f8fafc', fontWeight: 'bold' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
           
           {/* Custom Legend */}
