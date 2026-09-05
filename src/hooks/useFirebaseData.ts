@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, query, orderBy, getDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { 
   Expense, 
@@ -44,10 +44,20 @@ export function useFirebaseData() {
     }
 
     const userRef = doc(db, 'users', user.uid);
-    
-    // Check if user doc exists, create if not
-    getDoc(userRef).then((docSnap) => {
-      if (!docSnap.exists()) {
+
+    const unsubUser = onSnapshot(userRef, (snapshot) => {
+      const isFromCache = Boolean(snapshot.metadata?.fromCache);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (data.profile) {
+          setUserProfile(data.profile);
+        }
+        setCategories(data.categories || DEFAULT_CATEGORIES);
+        setIncomeCategories(data.incomeCategories || DEFAULT_INCOME_CATEGORIES);
+        setCategoryColors(data.categoryColors || DEFAULT_CATEGORY_COLORS);
+        setBudgets(data.budgets || {});
+      } else if (!isFromCache) {
+        // Document does not exist on server yet; initialize default template safely
         setDoc(userRef, {
           categories: DEFAULT_CATEGORIES,
           incomeCategories: DEFAULT_INCOME_CATEGORIES,
@@ -60,24 +70,13 @@ export function useFirebaseData() {
             frequentCurrencies: ['VND', 'USD'],
             onboarded: false,
           }
+        }, { merge: true }).catch((err) => {
+          console.warn("Could not auto-initialize user document (client may be offline):", err);
         });
-      }
-    });
-
-    const unsubUser = onSnapshot(userRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        if (data.profile) {
-          setUserProfile(data.profile);
-        }
-        setCategories(data.categories || DEFAULT_CATEGORIES);
-        setIncomeCategories(data.incomeCategories || DEFAULT_INCOME_CATEGORIES);
-        setCategoryColors(data.categoryColors || DEFAULT_CATEGORY_COLORS);
-        setBudgets(data.budgets || {});
       }
       setLoading(false);
     }, (error) => {
-       console.error("Error fetching user Data", error);
+       console.warn("User data sync notice (client may be offline):", error);
        setLoading(false);
     });
 

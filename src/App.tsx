@@ -718,7 +718,7 @@ export default function App() {
             incomeCategories={incomeCategories} 
             recentTransactions={expenses}
             baseCurrency={settings.currency}
-            userPersona={userProfile.persona}
+            userPersona={userProfile?.persona}
           />
           <BudgetAlertsWidget 
             expenses={currentMonthExpensesList} 
