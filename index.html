@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <meta name="google-site-verification" content="9IOYGmsRXeJ9TrHRd6SopMQYdkJe0QPJbHU8Eny_hY4" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,6 +33,28 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
   </head>
   <body class="font-sans antialiased text-slate-900 selection:bg-blue-500 selection:text-white">
+    <!-- Cấu hình Google Sign-In -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+  function handleCredentialResponse(response) {
+    const base64Url = response.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const userInfo = JSON.parse(jsonPayload);
+    console.log("Đã đăng nhập thành công:", userInfo);
+    alert("Xin chào " + userInfo.name + " (" + userInfo.email + ")");
+  }
+</script>
+
+<div id="g_id_onload"
+     data-client_id="420848103747-c8l3s072p9tiltk64tkbdu73h7br1dn3.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse">
+</div>
+<div class="g_id_signin" data-type="standard"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
