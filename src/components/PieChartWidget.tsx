@@ -40,8 +40,8 @@ export function PieChartWidget({ expenses, title = "Cơ cấu chi tiêu tháng n
     <div className="liquid-glass rounded-3xl p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[400px] overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
       <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-2 truncate tracking-tight" title={title}>{title}</h2>
-      <div className="flex-1 w-full relative min-h-[250px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="flex-1 w-full relative min-h-[250px]" style={{ minWidth: 0 }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <PieChart>
             <Pie
               data={data}
