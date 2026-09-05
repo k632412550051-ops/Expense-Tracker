@@ -1,8 +1,8 @@
-const firebaseConfig = {
+{
   apiKey: "AIzaSyC1TMfMWGhNvLUX0vRs0XKPc_nbQ6DkRVQ",
   authDomain: "gen-lang-client-0608413924.firebaseapp.com",
   projectId: "gen-lang-client-0608413924",
   storageBucket: "gen-lang-client-0608413924.firebasestorage.app",
   messagingSenderId: "204940026020",
   appId: "1:204940026020:web:d63b0cfb13e3b9c88f4631"
-};
+}
