@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Settings as SettingsIcon, 
-  X, 
-  Moon, 
+  Settings as SettingsIcon,
+  Moon,
   Sun, 
   Laptop, 
   Coins, 
@@ -157,13 +156,7 @@ export function SettingsModal({
                   </p>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-all cursor-pointer"
-                title="Đóng"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {/* Removed X button to rely on "Hoàn tất" button instead */}
             </div>
 
             {/* Quick Tabs - shrink-0 ensures tabs never clip when switching tabs */}

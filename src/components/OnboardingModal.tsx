@@ -10,8 +10,7 @@ import {
   ChevronRight, 
   ChevronLeft, 
   Coins,
-  Globe2,
-  X
+  Globe2
 } from 'lucide-react';
 import { CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
 import { PERSONA_CONFIGS } from '../lib/persona';
@@ -135,15 +134,7 @@ export function OnboardingModal({
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
                 Bước {step}/4
               </span>
-              {onClose && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              {/* Removed X button to prevent redundancy */}
             </div>
           </div>
 
