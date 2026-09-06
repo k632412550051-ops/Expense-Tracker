@@ -1,185 +1,100 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Expense Tracker - Smart Personal Budget & Expense Management</title>
-  <!-- GOOGLE_SEARCH_CONSOLE_VERIFICATION_TAG -->
-  <style>
-    :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --text: #0f172a;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --border: #e2e8f0;
-      --muted: #64748b;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --text: #f8fafc;
-        --bg: #0b0f19;
-        --card-bg: #131b2e;
-        --border: #232f48;
-        --muted: #94a3b8;
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'media',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
       }
     }
+  </script>
+  <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
+      background-color: #f8fafc;
+      background-image: 
+        radial-gradient(at 0% 0%, hsla(217,100%,76%,0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(189,100%,56%,0.15) 0px, transparent 50%);
+      background-attachment: fixed;
     }
-    .header {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1100px;
-      margin: 0 auto;
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #090e1a;
+        background-image: 
+          radial-gradient(at 0% 0%, hsla(217,100%,76%,0.08) 0px, transparent 50%),
+          radial-gradient(at 100% 0%, hsla(189,100%,56%,0.08) 0px, transparent 50%);
+      }
     }
-    .logo {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--primary);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    
+    .liquid-glass-elevated {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 20px 40px -8px rgba(14, 76, 165, 0.12),
+                  0 4px 12px -2px rgba(14, 76, 165, 0.06),
+                  inset 0 1px 1px 0 rgba(255, 255, 255, 1);
     }
-    .nav a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      margin-left: 20px;
-      transition: color 0.15s;
+    @media (prefers-color-scheme: dark) {
+      .liquid-glass-elevated {
+        background: rgba(22, 32, 54, 0.85);
+        backdrop-filter: blur(28px) saturate(200%);
+        -webkit-backdrop-filter: blur(28px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 24px 48px -8px rgba(0, 0, 0, 0.75),
+                    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.28);
+      }
     }
-    .nav a:hover {
-      color: var(--primary);
+    .prose-content h1 { font-size: 2rem; font-weight: 800; color: #2563eb; margin-bottom: 1rem; }
+    .prose-content h2 { font-size: 1.25rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; border-bottom: 1px solid rgba(148, 163, 184, 0.2); padding-bottom: 0.5rem; }
+    .prose-content h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    .prose-content p, .prose-content li { margin-bottom: 0.75rem; line-height: 1.6; color: #334155; }
+    @media (prefers-color-scheme: dark) {
+      .prose-content h1 { color: #38bdf8; }
+      .prose-content h2 { color: #f8fafc; }
+      .prose-content h3 { color: #f8fafc; }
+      .prose-content p, .prose-content li { color: #cbd5e1; }
     }
-    .hero {
-      max-width: 900px;
-      margin: 50px auto 30px;
-      text-align: center;
-      padding: 0 20px;
+    .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+    .prose-content a { color: #2563eb; text-decoration: underline; }
+    @media (prefers-color-scheme: dark) {
+      .prose-content a { color: #38bdf8; }
     }
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      background: #eff6ff;
-      color: #2563eb;
-      border-radius: 9999px;
-      font-weight: 700;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 16px;
-    }
-    h1 {
-      font-size: 42px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin: 0 0 16px;
-      line-height: 1.2;
-    }
-    .subtitle {
-      font-size: 18px;
-      color: var(--muted);
-      max-width: 700px;
-      margin: 0 auto 28px;
-    }
-    .cta-btn {
-      display: inline-block;
-      background: var(--primary);
-      color: #ffffff;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 16px;
-      padding: 14px 32px;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-      transition: background 0.15s, transform 0.15s;
-    }
-    .cta-btn:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-    }
-    .features {
-      max-width: 1000px;
-      margin: 50px auto;
-      padding: 0 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-    }
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-    .card-icon {
-      font-size: 28px;
-      margin-bottom: 12px;
-    }
-    .card h3 {
-      font-size: 18px;
-      margin: 0 0 8px;
-    }
-    .card p {
-      font-size: 14px;
-      color: var(--muted);
-      margin: 0;
-    }
-    .legal-notice {
-      max-width: 960px;
-      margin: 20px auto 40px;
-      padding: 20px 24px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      font-size: 14px;
-      color: #1e3a8a;
-    }
-    .footer {
-      border-top: 1px solid var(--border);
-      background: var(--card-bg);
-      padding: 32px 20px;
-      margin-top: 60px;
-      text-align: center;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      margin-bottom: 12px;
-    }
-    .footer-links a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .footer-links a:hover {
-      text-decoration: underline;
-    }
+    .prose-content .meta { color: #64748b; font-size: 0.875rem; margin-bottom: 2rem; }
   </style>
 </head>
-<body>
-  <div class="header">
-    <a href="./" class="logo">📊 Expense Tracker</a>
-    <div class="nav">
-      <a href="./">Ứng dụng</a>
-      <a href="privacy.html">Chính sách quyền riêng tư</a>
-      <a href="terms.html">Điều khoản dịch vụ</a>
+
+<body class="text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
+  <header class="sticky top-0 z-30 border-b border-white/80 dark:border-white/15 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <a href="./index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-800 p-0.5 shadow-md flex items-center justify-center">
+          <div class="w-full h-full rounded-[14px] bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40 text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+          </div>
+        </div>
+        <span class="font-bold text-lg font-heading tracking-tight text-slate-900 dark:text-white">Expense Tracker</span>
+      </a>
+      <a href="./index.html" class="text-sm font-semibold text-blue-600 dark:text-cyan-400 hover:underline">Quay lại ứng dụng</a>
     </div>
+  </header>
+  
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-12">
+    <div class="liquid-glass-elevated rounded-3xl p-8 sm:p-12 relative overflow-hidden prose-content">
+
+  
   </div>
 
   <div class="hero">
@@ -236,5 +151,12 @@
     </div>
     <p>Expense Tracker • Phát triển bởi: <strong>k63.2412550051@ftu.edu.vn</strong> • Dự án quản lý tài chính cá nhân</p>
   </div>
+
+    </div>
+  </main>
+  
+  <footer class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+    <p>&copy; 2026 Expense Tracker. All rights reserved.</p>
+  </footer>
 </body>
 </html>
