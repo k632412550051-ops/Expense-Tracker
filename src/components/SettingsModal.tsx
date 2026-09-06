@@ -465,17 +465,17 @@ export function SettingsModal({
                     </div>
 
                     {/* Section 3: Live Exchange Rates with 3-day update policy */}
-                    <div className="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/50">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/50 pb-2.5">
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <TrendingUp className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
-                              Tỷ giá thị trường
+                            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                              Tỷ giá thị trường thời gian thực
                             </h4>
                           </div>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                            Lần cuối: {ratesInfo.lastUpdatedText}
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            Chu kỳ 3 ngày/lần • Lần cuối: <span className="font-semibold text-slate-700 dark:text-slate-300">{ratesInfo.lastUpdatedText}</span>
                           </p>
                         </div>
 
@@ -483,23 +483,23 @@ export function SettingsModal({
                           <button
                             type="button"
                             onClick={() => setRateDisplayMode(rateDisplayMode === 'perVND' ? 'perForeign' : 'perVND')}
-                            className="text-[10px] font-medium px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                            className="text-[10px] font-bold px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-2xs cursor-pointer"
                           >
-                            {rateDisplayMode === 'perVND' ? 'Đảo chiều (Theo ngoại tệ)' : 'Đảo chiều (Theo VND)'}
+                            {rateDisplayMode === 'perVND' ? 'Theo ngoại tệ' : 'Theo VND'}
                           </button>
                           <button
                             type="button"
                             disabled={isUpdatingRates}
                             onClick={handleRefreshRates}
-                            title="Làm mới tỷ giá"
-                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
+                            title="Làm mới tỷ giá ngay lập tức"
+                            className="p-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-slate-600 transition-all cursor-pointer disabled:opacity-50"
                           >
                             <RefreshCw className={cn("w-3.5 h-3.5", isUpdatingRates && "animate-spin")} />
                           </button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 pt-1">
                         {CURRENCY_OPTIONS.filter(c => c.code !== 'VND').map(c => {
                           const isPerVND = rateDisplayMode === 'perVND';
                           const rate = isPerVND ? getExchangeRate('VND', c.code) : getExchangeRate(c.code, 'VND');
@@ -511,11 +511,11 @@ export function SettingsModal({
                           
                           return (
                             <div key={c.code} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800/60 last:border-0 sm:[&:nth-last-child(-n+2)]:border-0">
-                              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                                 {!isPerVND && <span>{c.flag}</span>}
                                 <span>{isPerVND ? '1 ₫' : `1 ${c.code}`}</span>
                               </span>
-                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                              <span className="text-[13px] font-black text-blue-600 dark:text-cyan-400">
                                 {formattedRate} {isPerVND ? c.code : '₫'}
                               </span>
                             </div>
