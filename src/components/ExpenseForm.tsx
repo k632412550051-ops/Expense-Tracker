@@ -75,9 +75,15 @@ export function ExpenseForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(Number(amount))) return;
-
     const numAmount = Number(amount);
-
+    if (numAmount <= 0) {
+      // Don't allow negative or zero expenses
+      return;
+    }
+    if (!category) {
+      return; // Must have a category
+    }
+    
     try {
       await onAddExpense({
         amount: numAmount,

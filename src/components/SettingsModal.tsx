@@ -111,11 +111,8 @@ export function SettingsModal({
     }
   };
 
-  const userInitial = user.displayName 
-    ? user.displayName.charAt(0).toUpperCase() 
-    : user.email 
-      ? user.email.charAt(0).toUpperCase() 
-      : 'U';
+  const displayName = userProfile?.displayName || user.displayName || 'Người dùng Google';
+  const userInitial = displayName.charAt(0).toUpperCase();
 
   return (
     <AnimatePresence>
@@ -271,7 +268,7 @@ export function SettingsModal({
                         )}
                         <div className="min-w-0">
                           <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                            {user.displayName || 'Người dùng Google'}
+                            {displayName}
                           </h3>
                           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                             {user.email || 'Đã đăng nhập'}
@@ -325,7 +322,6 @@ export function SettingsModal({
                     {/* Budget & Category Management Entry Point */}
                     <div 
                       onClick={() => {
-                        onClose();
                         onOpenBudgetModal();
                       }}
                       className="p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700/60 shadow-xs hover:border-blue-300 dark:hover:border-blue-500/40 hover:bg-white dark:hover:bg-slate-800 transition-all flex items-center justify-between cursor-pointer group"
@@ -755,7 +751,7 @@ export function SettingsModal({
             <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 flex flex-wrap items-center justify-between gap-3 shrink-0 z-10">
               <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                 <a
-                  href="/about.html"
+                  href="./about.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
@@ -764,16 +760,16 @@ export function SettingsModal({
                 </a>
                 <span>•</span>
                 <a
-                  href="/privacy.html"
+                  href="./privacy.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                 >
-                  Chính sách quyền riêng tư
+                  Quyền riêng tư
                 </a>
                 <span>•</span>
                 <a
-                  href="/terms.html"
+                  href="./terms.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"

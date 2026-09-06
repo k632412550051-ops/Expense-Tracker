@@ -508,7 +508,7 @@ export default function App() {
                   {/* Public Legal & App info links */}
                   <div className="mt-5 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <a 
-                      href="/about.html" 
+                      href="./about.html" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
@@ -517,7 +517,7 @@ export default function App() {
                     </a>
                     <span>•</span>
                     <a 
-                      href="/privacy.html" 
+                      href="./privacy.html" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
@@ -526,7 +526,7 @@ export default function App() {
                     </a>
                     <span>•</span>
                     <a 
-                      href="/terms.html" 
+                      href="./terms.html" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
@@ -565,7 +565,7 @@ export default function App() {
             <span>Bạn đang xem thử giao diện ứng dụng Expense Tracker mà không cần đăng nhập.</span>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-100 text-[11px]">
+            <a href="./privacy.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-100 text-[11px]">
               Chính sách bảo mật
             </a>
             <button
@@ -634,7 +634,7 @@ export default function App() {
                 />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
-                  {user.displayName ? user.displayName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
+                  {(userProfile?.displayName || user.displayName) ? (userProfile?.displayName || user.displayName)!.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
                 </div>
               )}
               <span className="hidden md:inline font-semibold text-slate-700 dark:text-slate-300">
