@@ -322,6 +322,8 @@ export function TransactionHistory({
           <div className="relative flex-1 min-w-[220px]">
             <Search className="w-4 h-4 text-blue-500/60 dark:text-cyan-400/80 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
+              id="transaction-search"
+              name="transaction-search"
               type="text"
               placeholder="Tìm theo ghi chú hoặc danh mục..."
               value={searchQuery}
@@ -342,6 +344,8 @@ export function TransactionHistory({
             <div className="flex items-center gap-1.5">
               <Filter className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
               <select
+                id="transaction-filter-category"
+                name="transaction-filter-category"
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
                 className="border border-white/80 dark:border-white/15 rounded-2xl text-slate-700 dark:text-white bg-white/70 dark:bg-slate-900/70 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all shadow-2xs font-medium cursor-pointer"
@@ -364,6 +368,8 @@ export function TransactionHistory({
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <select
+                id="transaction-filter-status"
+                name="transaction-filter-status"
                 value={filterResolved}
                 onChange={(e) => setFilterResolved(e.target.value as 'all' | 'pending' | 'resolved')}
                 className="border border-white/80 dark:border-white/15 rounded-2xl text-slate-700 dark:text-white bg-white/70 dark:bg-slate-900/70 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all shadow-2xs font-medium cursor-pointer"
