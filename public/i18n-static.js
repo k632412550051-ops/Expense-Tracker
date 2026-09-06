@@ -40,6 +40,13 @@
     vi: {
       navHome: "Mở Ứng Dụng Expense Tracker →",
       appName: "Expense Tracker",
+      metaApp: "Ứng dụng:",
+      metaDev: "Nhà phát triển:",
+      footerBack: "&larr; Quay lại Ứng dụng",
+      footerAbout: "Trang giới thiệu",
+      footerPrivacy: "Quyền riêng tư",
+      footerTerms: "Điều khoản",
+
       appTagline: "Quản lý chi tiêu thông minh",
       footerRights: "© 2026 Expense Tracker. Tất cả quyền được bảo lưu.",
       aboutTitle: "Giới thiệu Ứng dụng - Expense Tracker",
@@ -74,6 +81,13 @@
     en: {
       navHome: "Open Expense Tracker App →",
       appName: "Expense Tracker",
+      metaApp: "App:",
+      metaDev: "Developer:",
+      footerBack: "&larr; Back to App",
+      footerAbout: "About Us",
+      footerPrivacy: "Privacy Policy",
+      footerTerms: "Terms of Service",
+
       appTagline: "Smart Expense & Budget Management",
       footerRights: "© 2026 Expense Tracker. All rights reserved.",
       aboutTitle: "About - Expense Tracker",
@@ -108,6 +122,13 @@
     ja: {
       navHome: "Expense Trackerアプリを開く →",
       appName: "Expense Tracker",
+      metaApp: "アプリ:",
+      metaDev: "開発者:",
+      footerBack: "&larr; アプリに戻る",
+      footerAbout: "アプリ概要",
+      footerPrivacy: "プライバシーポリシー",
+      footerTerms: "利用規約",
+
       appTagline: "スマート家計簿・支出管理",
       footerRights: "© 2026 Expense Tracker. 無断転載を禁じます。",
       aboutTitle: "アプリ概要 - Expense Tracker",
@@ -142,6 +163,13 @@
     ko: {
       navHome: "Expense Tracker 앱 열기 →",
       appName: "Expense Tracker",
+      metaApp: "앱:",
+      metaDev: "개발자:",
+      footerBack: "&larr; 앱으로 돌아가기",
+      footerAbout: "앱 소개",
+      footerPrivacy: "개인정보 처리방침",
+      footerTerms: "이용약관",
+
       appTagline: "스마트 가계부 & 지출 관리",
       footerRights: "© 2026 Expense Tracker. All rights reserved.",
       aboutTitle: "앱 소개 - Expense Tracker",
@@ -176,6 +204,13 @@
     zh: {
       navHome: "打开 Expense Tracker 应用 →",
       appName: "Expense Tracker",
+      metaApp: "应用:",
+      metaDev: "开发者:",
+      footerBack: "&larr; 返回应用",
+      footerAbout: "关于我们",
+      footerPrivacy: "隐私政策",
+      footerTerms: "服务条款",
+
       appTagline: "智能个人记账与支出管理",
       footerRights: "© 2026 Expense Tracker. 版权所有。",
       aboutTitle: "关于我们 - Expense Tracker",
