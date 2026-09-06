@@ -19,8 +19,6 @@ import { formatCurrency } from '../lib/utils';
 import { 
   Sparkles,
   Layers,
-  Zap,
-  Lightbulb,
   BellRing
 } from 'lucide-react';
 
@@ -272,14 +270,14 @@ export function OnboardingModal({
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-50/90 to-indigo-50/70 dark:from-slate-900/90 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 shadow-xs space-y-2.5 text-xs"
+                    className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 to-indigo-50/70 dark:from-slate-900/90 dark:to-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 shadow-xs space-y-3.5 text-xs"
                   >
-                    <div className="flex items-start justify-between gap-2 border-b border-blue-100 dark:border-blue-900/40 pb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-100 dark:border-blue-900/40 pb-2">
                       <div className="flex items-center gap-1.5 text-blue-900 dark:text-cyan-300 font-extrabold text-xs">
                         <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
                         <span>App sẽ tự động cá nhân hóa những gì?</span>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-600/10 text-blue-700 dark:text-cyan-300 shrink-0">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-600/10 text-blue-700 dark:text-cyan-300 shrink-0 self-start sm:self-auto">
                         Ngân sách gợi ý: {PERSONA_CONFIGS[persona].recommendedMonthlyBudgetVND.toLocaleString('vi-VN')} ₫/tháng
                       </span>
                     </div>
@@ -290,44 +288,13 @@ export function OnboardingModal({
 
                     {/* Auto-configured categories */}
                     <div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                        <Layers className="w-3 h-3 text-blue-500" />
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                        <Layers className="w-3 h-3 text-blue-500 shrink-0" />
                         <span>Bộ 6 danh mục được tạo sẵn:</span>
                       </div>
-                      <div className="flex flex-wrap gap-1">
-                        {PERSONA_CONFIGS[persona].defaultCategories.map((cat) => (
-                          <span 
-                            key={cat}
-                            className="px-2 py-0.5 rounded-lg bg-white/90 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-[10px] font-bold text-slate-800 dark:text-slate-200 shadow-2xs"
-                          >
-                            {cat}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Quick input notes */}
-                    <div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                        <Zap className="w-3 h-3 text-amber-500" />
-                        <span>Gợi ý ghi chú nhanh 1 chạm khi nhập chi:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {PERSONA_CONFIGS[persona].quickNoteSuggestions.map((q) => (
-                          <span 
-                            key={q}
-                            className="px-1.5 py-0.5 rounded-md bg-blue-100/60 dark:bg-blue-900/30 text-blue-700 dark:text-cyan-300 text-[10px] font-medium"
-                          >
-                            {q}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Advice snippet */}
-                    <div className="flex items-start gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 pt-0.5">
-                      <Lightbulb className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
-                      <span className="italic">{PERSONA_CONFIGS[persona].financialAdvice}</span>
+                      <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 leading-relaxed">
+                        {PERSONA_CONFIGS[persona].defaultCategories.join(' • ')}
+                      </p>
                     </div>
                   </motion.div>
                 )}
