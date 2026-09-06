@@ -515,19 +515,7 @@ export default function App() {
                       <span>{isLoggingIn ? t('auth.signingIn') : t('auth.alreadyHaveAccount')}</span>
                   </button>
 
-                  {/* Direct Guest Experience Button */}
-                  <button 
-                     type="button"
-                     id="welcome-guest-btn"
-                     onClick={() => {
-                       enterGuestMode('Khách');
-                       showNotification('Đã bắt đầu trải nghiệm ở chế độ Khách');
-                     }}
-                     className="w-full text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white py-2 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                     <span>{t('onboarding.continueAsGuest', { defaultValue: 'Trải nghiệm ngay không cần tài khoản' })}</span>
-                     <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+
 
                   {/* Public Legal & App info links */}
                   <div className="mt-5 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">

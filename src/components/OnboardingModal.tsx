@@ -106,7 +106,7 @@ export function OnboardingModal({
     }
   };
 
-  const handleFinishWithoutSignIn = async () => {
+  const handleCompleteOnboarding = async () => {
     const finalName = displayName.trim() || 'Bạn';
     const pConfig = PERSONA_CONFIGS[persona] || PERSONA_CONFIGS.student;
     const targetBudget = baseCurrency === 'VND' 
@@ -552,7 +552,7 @@ export function OnboardingModal({
                   <button
                     type="button"
                     id="onboarding-complete-btn"
-                    onClick={handleFinishWithoutSignIn}
+                    onClick={handleCompleteOnboarding}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 px-5 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Check className="w-5 h-5" />
@@ -580,15 +580,7 @@ export function OnboardingModal({
                       <span>{isLoggingIn ? t('auth.signingIn') : t('auth.signInWithGoogle')}</span>
                     </button>
 
-                    <button
-                      type="button"
-                      id="onboarding-guest-continue-btn"
-                      onClick={handleFinishWithoutSignIn}
-                      className="w-full py-2.5 px-4 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <span>{t('onboarding.continueAsGuest', { defaultValue: 'Trải nghiệm ngay không cần tài khoản' })}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    
                   </div>
                 )}
               </motion.div>
