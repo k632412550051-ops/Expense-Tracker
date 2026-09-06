@@ -60,12 +60,14 @@
       feat5Desc: "Nút làm mờ số tiền giúp bạn yên tâm sử dụng ở nơi đông người mà không sợ bị nhìn ngó. Dữ liệu của bạn được bảo vệ an toàn.",
       feat6Title: "Lưu trữ không bao giờ mất",
       feat6Desc: "Đăng nhập bằng tài khoản Google để lưu trữ dữ liệu. Dù dùng điện thoại hay máy tính, thông tin của bạn luôn được đồng bộ.",
-      privacyTitle: "Chính Sách Quyền Riêng Tư - Expense Tracker",
-      privacyHeader: "Chính Sách Quyền Riêng Tư",
-      privacyMeta: "Cập nhật lần cuối: Tháng 03/2026",
-      termsTitle: "Điều Khoản Dịch Vụ - Expense Tracker",
-      termsHeader: "Điều Khoản Dịch Vụ",
-      termsMeta: "Cập nhật lần cuối: Tháng 03/2026"
+      privacyTitle: "Chính sách Quyền riêng tư - Expense Tracker",
+      privacyBadge: "Chính sách chính thức",
+      privacyHeader: "Chính sách Quyền riêng tư",
+      privacyMeta: "Hiệu lực: Tháng 9, 2026",
+      termsTitle: "Điều khoản Dịch vụ - Expense Tracker",
+      termsBadge: "Điều khoản chính thức",
+      termsHeader: "Điều khoản Dịch vụ",
+      termsMeta: "Cập nhật lần cuối: Tháng 9, 2026"
     },
     en: {
       navHome: "Open Expense Tracker App →",
