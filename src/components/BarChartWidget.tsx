@@ -61,7 +61,7 @@ export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND'
       <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
       <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-1 tracking-tight">Chi tiêu 6 tháng gần nhất</h2>
       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-3">Xu hướng biến động chi tiêu theo thời gian</p>
-      <div className="flex-1 w-full" style={{ minWidth: 0 }}>
+      <div className="flex-1 w-full" style={{ minWidth: 0, minHeight: 200 }}>
         {isMounted && (
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

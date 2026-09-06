@@ -168,13 +168,15 @@ export function ExpenseForm({
         {/* Amount Input */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
+            <label htmlFor="expense-amount" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
               Số tiền ({baseCurrency})
             </label>
           </div>
 
           <div className="relative">
             <input
+              id="expense-amount"
+              name="expense-amount"
               type="number"
               required
               min="0"
@@ -191,7 +193,7 @@ export function ExpenseForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Danh mục</label>
+          <label htmlFor="expense-category" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Danh mục</label>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div 
               key={type}
@@ -201,6 +203,8 @@ export function ExpenseForm({
               transition={{ duration: 0.15 }}
             >
               <select
+                id="expense-category"
+                name="expense-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as Category)}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all text-sm font-medium cursor-pointer"
@@ -214,8 +218,10 @@ export function ExpenseForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Ngày</label>
+          <label htmlFor="expense-date" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Ngày</label>
           <input
+            id="expense-date"
+            name="expense-date"
             type="date"
             required
             value={date}
@@ -225,8 +231,10 @@ export function ExpenseForm({
         </div>
 
         <div className="flex flex-col gap-1.5 relative">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Ghi chú</label>
+          <label htmlFor="expense-note" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Ghi chú</label>
           <input
+            id="expense-note"
+            name="expense-note"
             type="text"
             value={note}
             onChange={(e) => {
@@ -313,6 +321,8 @@ export function ExpenseForm({
                   <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
                   <span className="font-medium">Ngày hẹn hoàn tiền:</span>
                   <input
+                    id="expense-reminder-date"
+                    name="expense-reminder-date"
                     type="date"
                     value={reminderDate}
                     onChange={(e) => setReminderDate(e.target.value)}

@@ -180,6 +180,8 @@ export function OnboardingModal({
 
                 <div className="pt-2">
                   <input
+                    id="onboarding-display-name"
+                    name="onboarding-display-name"
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
@@ -349,10 +351,10 @@ export function OnboardingModal({
 
                 {/* Base currency selection */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <h4 className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Coins className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
                     Đồng tiền cơ sở
-                  </label>
+                  </h4>
                   <div className="grid grid-cols-3 gap-2">
                     {CURRENCY_OPTIONS.slice(0, 6).map((curr) => {
                       const isSelected = baseCurrency === curr.code;
@@ -377,10 +379,10 @@ export function OnboardingModal({
 
                 {/* Frequent currencies */}
                 <div className="pt-1">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <h4 className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                     <Globe2 className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
                     Ngoại tệ hay dùng (chọn thêm nếu có)
-                  </label>
+                  </h4>
                   <div className="flex flex-wrap gap-1.5">
                     {CURRENCY_OPTIONS.map((curr) => {
                       const isBase = curr.code === baseCurrency;

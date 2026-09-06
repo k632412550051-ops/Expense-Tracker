@@ -316,8 +316,10 @@ export function SettingsModal({
                         </div>
                       </div>
 
-                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <label htmlFor="privacy-mode-toggle" className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
+                          id="privacy-mode-toggle"
+                          name="privacy-mode-toggle"
                           type="checkbox"
                           checked={settings.privacyMode}
                           onChange={(e) => onUpdateSettings({ privacyMode: e.target.checked })}
@@ -682,8 +684,10 @@ export function SettingsModal({
                           {isConnectingCalendar && (
                             <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />
                           )}
-                          <label className="relative inline-flex items-center cursor-pointer">
+                          <label htmlFor="calendar-sync-toggle" className="relative inline-flex items-center cursor-pointer">
                             <input
+                              id="calendar-sync-toggle"
+                              name="calendar-sync-toggle"
                               type="checkbox"
                               disabled={isConnectingCalendar}
                               checked={calendarConnected}

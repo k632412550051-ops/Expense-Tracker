@@ -186,6 +186,8 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
           
           <div className="flex gap-2 mb-6">
             <input
+              id="new-category-name"
+              name="new-category-name"
               type="text"
               value={newCatName}
               onChange={e => setNewCatName(e.target.value)}
@@ -251,6 +253,8 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                           <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
                             <span className="text-xs text-gray-500 dark:text-slate-400">Tùy chọn:</span>
                             <input
+                              id={`color-picker-${category}`}
+                              name={`color-picker-${category}`}
                               type="color"
                               value={currentColor}
                               onChange={(e) => handleSetCategoryColor(category, e.target.value)}
@@ -264,6 +268,8 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
 
                     {editingCategory === category ? (
                       <input 
+                        id={`edit-category-${category}`}
+                        name={`edit-category-${category}`}
                         type="text"
                         value={editCategoryName}
                         onChange={e => setEditCategoryName(e.target.value)}
@@ -276,17 +282,25 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                         onBlur={handleSaveRename}
                       />
                     ) : (
-                      <label 
+                      <span 
+                        role="button"
+                        tabIndex={0}
                         className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-2 group truncate"
                         onClick={() => {
                            setEditingCategory(category);
                            setEditCategoryName(category);
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setEditingCategory(category);
+                            setEditCategoryName(category);
+                          }
+                        }}
                         title="Nhấn để đổi tên"
                       >
                         {category}
                         <Edit2 className="w-3 h-3 text-gray-300 dark:text-slate-600 group-hover:text-emerald-500" />
-                      </label>
+                      </span>
                     )}
                   </div>
                   <button 
@@ -300,6 +314,8 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                 {tab === 'expense' && (
                   <div className="relative">
                     <input
+                      id={`budget-${category}`}
+                      name={`budget-${category}`}
                       type="number"
                       min="0"
                       step="10000"
