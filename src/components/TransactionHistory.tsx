@@ -18,7 +18,8 @@ import {
   ArrowDownLeft,
   CalendarDays,
   ShieldCheck,
-  ExternalLink
+  ExternalLink,
+  BellRing
 } from 'lucide-react';
 import { createGoogleCalendarUrl } from '../lib/googleCalendar';
 
@@ -593,43 +594,7 @@ export function TransactionHistory({
                             title={exp.category}
                           />
                           <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-slate-900 dark:text-white truncate">{exp.category}</span>
-                              {exp.isReimbursable && (
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className={cn(
-                                    "text-[10px] px-2.5 py-0.5 rounded-full font-bold shrink-0 border",
-                                    exp.isResolved 
-                                      ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
-                                      : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-                                  )}>
-                                    {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
-                                  </span>
-
-                                  {exp.calendarEventId ? (
-                                    <span
-                                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60"
-                                      title="Đã bật thông báo trình duyệt cho khoản chi này"
-                                    >
-                                      <BellRing className="w-3 h-3" />
-                                      <span>Đã bật thông báo</span>
-                                    </span>
-                                  ) : (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (onSyncCalendar) onSyncCalendar(exp);
-                                      }}
-                                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
-                                      title="Bật thông báo nhắc hoàn tiền"
-                                    >
-                                      <BellRing className="w-2.5 h-2.5" />
-                                      <span>+ Bật thông báo</span>
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                            <span className="font-bold text-slate-900 dark:text-white truncate">{exp.category}</span>
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               <span className="font-semibold text-slate-600 dark:text-slate-300">
                                 {exp.date.split('-').reverse().join('/')}
@@ -640,6 +605,41 @@ export function TransactionHistory({
                                 </span>
                               )}
                             </div>
+                            
+                            {exp.isReimbursable && (
+                              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                <span className={cn(
+                                  "text-[10px] px-2.5 py-0.5 rounded-full font-bold shrink-0 border",
+                                  exp.isResolved 
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" 
+                                    : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                )}>
+                                  {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
+                                </span>
+
+                                {exp.calendarEventId ? (
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60"
+                                    title="Đã bật thông báo trình duyệt cho khoản chi này"
+                                  >
+                                    <BellRing className="w-2.5 h-2.5" />
+                                    <span>Đã bật thông báo</span>
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (onSyncCalendar) onSyncCalendar(exp);
+                                    }}
+                                    className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
+                                    title="Bật thông báo nhắc hoàn tiền"
+                                  >
+                                    <BellRing className="w-2.5 h-2.5" />
+                                    <span>+ Bật thông báo</span>
+                                  </button>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -818,6 +818,7 @@ export function TransactionHistory({
                                     <span className={cn(
                                       "text-[10px] px-2 py-0.5 rounded-full font-bold",
                                       exp.isResolved ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300" : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                                    )}>
                                       {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
                                     </span>
 

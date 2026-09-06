@@ -20,7 +20,8 @@ import {
   Sparkles,
   Layers,
   Zap,
-  Lightbulb
+  Lightbulb,
+  BellRing
 } from 'lucide-react';
 
 interface OnboardingModalProps {
@@ -32,6 +33,7 @@ interface OnboardingModalProps {
     baseCurrency: CurrencyCode;
     frequentCurrencies: CurrencyCode[];
     monthlyBudget: number;
+    enableNotifications: boolean;
   }) => Promise<void>;
   onGoogleSignIn: () => Promise<void>;
   isLoggingIn: boolean;
@@ -68,6 +70,7 @@ export function OnboardingModal({
   const [persona, setPersona] = useState<PersonaType>('student');
   const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(initialBaseCurrency);
   const [frequentCurrencies, setFrequentCurrencies] = useState<CurrencyCode[]>(['VND', 'USD']);
+  const [enableNotifications, setEnableNotifications] = useState(true);
 
   if (!isOpen) return null;
 
@@ -99,7 +102,8 @@ export function OnboardingModal({
       persona,
       baseCurrency,
       frequentCurrencies: Array.from(new Set([baseCurrency, ...frequentCurrencies])),
-      monthlyBudget: targetBudget
+      monthlyBudget: targetBudget,
+      enableNotifications
     });
     await onGoogleSignIn();
   };
@@ -452,6 +456,26 @@ export function OnboardingModal({
                     <span className="text-xs font-black text-blue-600 dark:text-cyan-400">
                       {CURRENCY_OPTIONS.find(c => c.code === baseCurrency)?.flag} {baseCurrency}
                     </span>
+                  </div>
+                </div>
+
+                {/* Notification Toggle */}
+                <div className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-slate-900/40 border border-blue-100 dark:border-blue-900/30 flex items-center justify-between cursor-pointer" onClick={() => setEnableNotifications(!enableNotifications)}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${enableNotifications ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                      <BellRing className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
+                        Nhắc nhở hoàn tiền
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 max-w-[200px]">
+                        Trình duyệt sẽ hiển thị thông báo khi có khoản chi đến hạn hoàn tiền
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${enableNotifications ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${enableNotifications ? 'translate-x-4' : 'translate-x-0'}`} />
                   </div>
                 </div>
 

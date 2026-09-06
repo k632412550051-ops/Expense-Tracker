@@ -169,6 +169,7 @@ export default function App() {
     baseCurrency: CurrencyCode;
     frequentCurrencies: CurrencyCode[];
     monthlyBudget: number;
+    enableNotifications: boolean;
   }) => {
     try {
       localStorage.setItem('pending_onboarding_data', JSON.stringify(data));
@@ -176,7 +177,10 @@ export default function App() {
       console.error("Failed to cache onboarding data:", e);
     }
 
-    handleUpdateSettings({ currency: data.baseCurrency });
+    handleUpdateSettings({ 
+      currency: data.baseCurrency,
+      calendarAutoSync: data.enableNotifications 
+    });
 
     if (user) {
       await updateUserProfile({
