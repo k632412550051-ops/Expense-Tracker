@@ -94,13 +94,21 @@
   <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-12">
     <div class="liquid-glass-elevated rounded-3xl p-8 sm:p-12 relative overflow-hidden prose-content">
 
-    <span class="badge">Official Policy</span>
-    <h1>Chính sách Quyền riêng tư / Privacy Policy</h1>
-    <p class="meta">
-      <strong>Ứng dụng (Application):</strong> Expense Tracker | 
-      <strong>Nhà phát triển (Developer):</strong> k63.2412550051@ftu.edu.vn | 
-      <strong>Hiệu lực (Effective Date):</strong> Tháng 9, 2026
-    </p>
+    <div class="mb-10 pb-6 border-b border-slate-200/60 dark:border-slate-700/60">
+      <span class="inline-block py-1.5 px-4 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-4 border border-indigo-200 dark:border-indigo-800/50 shadow-sm">
+        Official Policy
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white font-heading tracking-tight mb-4">
+        Chính sách Quyền riêng tư
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4 gap-y-2">
+        <span><strong>Ứng dụng:</strong> Expense Tracker</span>
+        <span>•</span>
+        <span><strong>Nhà phát triển:</strong> k63.2412550051@ftu.edu.vn</span>
+        <span>•</span>
+        <span><strong>Hiệu lực:</strong> Tháng 9, 2026</span>
+      </p>
+    </div>
 
     <h2>1. Giới thiệu (Introduction)</h2>
     <p>
@@ -113,7 +121,7 @@
       <li><strong>Thông tin tài khoản Google (Google Account Data):</strong> Khi bạn đăng nhập qua Google Identity / Firebase Authentication, chúng tôi tiếp nhận địa chỉ email (email address), tên hiển thị (display name) và ảnh hồ sơ (avatar URL) để xác thực người dùng và phân vùng dữ liệu cá nhân.</li>
       <li><strong>Dữ liệu tài chính do người dùng cung cấp (Financial Records):</strong> Các khoản chi tiêu, thu nhập, số tiền, loại tiền tệ (VND, USD, EUR, JPY,...), danh mục phân loại, thời gian phát sinh giao dịch, và ghi chú chi tiêu do chính bạn tạo ra.</li>
       <li><strong>Cấu hình ứng dụng (User Preferences):</strong> Hạn mức ngân sách hàng tháng, tỷ giá tiền tệ quy đổi, giao diện sáng/tối và tùy chọn chế độ riêng tư (Privacy Mode).</li>
-      <li><strong>Google Calendar Integration (Tùy chọn):</strong> Khi bạn chủ động sử dụng tính năng tạo lịch hẹn nhắc hoàn tiền cho các khoản chi hộ, ứng dụng sẽ tạo sự kiện nhắc việc trên Google Calendar của bạn theo thời gian hẹn mà bạn chọn.</li>
+      <li><strong>Nhắc nhở hoàn tiền (Web Notifications):</strong> Khi bạn kích hoạt tính năng nhắc hoàn tiền cho khoản chi hộ, ứng dụng sẽ lên lịch và gửi thông báo đẩy trực tiếp qua trình duyệt của bạn (hoàn toàn chạy ở máy khách cục bộ).</li>
     </ul>
 
     <h2>3. Mục đích sử dụng dữ liệu (How We Use Your Data)</h2>
@@ -121,12 +129,12 @@
     <ul>
       <li>Tính toán số dư tài chính, phân tích cơ cấu chi tiêu theo danh mục qua biểu đồ trực quan.</li>
       <li>Lưu trữ đồng bộ dữ liệu giao dịch của bạn trên cơ sở dữ liệu đám mây bảo mật Google Cloud Firebase Firestore.</li>
-      <li>Hỗ trợ tính năng nhắc nhở hoàn tiền khi chi tiêu chung với người khác qua Google Calendar.</li>
+      <li>Hỗ trợ tính năng nhắc nhở hoàn tiền trên thiết bị khi bạn chi tiêu chung với người khác.</li>
     </ul>
 
-    <div class="highlight-box">
-      <strong>Cam kết Limited Use của Google API:</strong><br/>
-      Việc Expense Tracker sử dụng và chuyển giao thông tin nhận được từ các API của Google sang bất kỳ ứng dụng nào khác sẽ tuân thủ nghiêm ngặt theo <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Chính sách Dữ liệu Người dùng của Dịch vụ Google API (Google API Services User Data Policy)</a>, bao gồm các yêu cầu về <strong>Sử dụng Có giới hạn (Limited Use)</strong>.
+    <div class="p-5 my-6 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 text-sm">
+      <strong class="text-blue-800 dark:text-blue-300">Cam kết Limited Use của Google API:</strong><br/>
+      Việc Expense Tracker sử dụng và chuyển giao thông tin nhận được từ các API của Google (như xác thực OAuth) sang bất kỳ ứng dụng nào khác sẽ tuân thủ nghiêm ngặt theo <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" class="font-medium hover:underline text-blue-600 dark:text-blue-400">Chính sách Dữ liệu Người dùng của Dịch vụ Google API</a>, bao gồm các yêu cầu về <strong>Sử dụng Có giới hạn (Limited Use)</strong>.
     </div>
 
     <h2>4. Chia sẻ và Chuyển giao dữ liệu (Data Sharing & Disclosure)</h2>
