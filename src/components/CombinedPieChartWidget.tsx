@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import { Expense, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { getExpenseConvertedAmount } from '../lib/exchangeRates';
+import { useCategoryTranslation } from '../lib/useCategoryTranslation';
 import { PieChart as PieIcon } from 'lucide-react';
 
 interface CombinedPieChartWidgetProps {
@@ -22,6 +24,9 @@ export function CombinedPieChartWidget({
   categoryColors,
   baseCurrency = 'VND'
 }: CombinedPieChartWidgetProps) {
+  const { t } = useTranslation();
+  const { translateCategory } = useCategoryTranslation();
+
   const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'previous'>('current');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -43,7 +48,8 @@ export function CombinedPieChartWidget({
     });
 
     const chartData = Object.keys(sums).map((category) => ({
-      name: category,
+      name: translateCategory(category),
+      rawCategory: category,
       value: sums[category],
       color: getCategoryColor(category, 'expense', categoryColors)
     })).filter(item => item.value > 0);
@@ -52,7 +58,7 @@ export function CombinedPieChartWidget({
     chartData.sort((a, b) => b.value - a.value);
 
     return { data: chartData, totalAmount: total };
-  }, [activeExpenses, categoryColors, baseCurrency]);
+  }, [activeExpenses, categoryColors, baseCurrency, translateCategory]);
 
   return (
     <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[420px] overflow-hidden">
@@ -67,11 +73,11 @@ export function CombinedPieChartWidget({
               <PieIcon className="w-4 h-4" />
             </div>
             <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
-              Cơ cấu chi tiêu
+              {t('charts.pieTitle')}
             </h2>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Tổng chi: <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totalAmount, baseCurrency)}</span>
+            {t('charts.totalSpentLabel')} <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(totalAmount, baseCurrency)}</span>
           </p>
         </div>
 
@@ -79,6 +85,7 @@ export function CombinedPieChartWidget({
         <div className="flex items-center p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-950/50 border border-white/70 dark:border-white/10 backdrop-blur-md self-start sm:self-auto">
           <button
             type="button"
+            id="pie-current-month-tab"
             onClick={() => setSelectedPeriod('current')}
             className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
@@ -87,10 +94,11 @@ export function CombinedPieChartWidget({
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             )}
           >
-            Tháng {currentMonthLabel}
+            {t('charts.monthTab', { month: currentMonthLabel })}
           </button>
           <button
             type="button"
+            id="pie-prev-month-tab"
             onClick={() => setSelectedPeriod('previous')}
             className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
@@ -99,14 +107,14 @@ export function CombinedPieChartWidget({
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             )}
           >
-            Tháng trước ({previousMonthLabel})
+            {t('charts.prevMonthTab', { month: previousMonthLabel })}
           </button>
         </div>
       </div>
 
       {data.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500 text-xs sm:text-sm font-medium">
-          <p>Không có khoản chi nào trong Tháng {activeLabel}.</p>
+          <p>{t('charts.noExpenseInMonth', { month: activeLabel })}</p>
         </div>
       ) : (
         <>
@@ -148,7 +156,7 @@ export function CombinedPieChartWidget({
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => [formatCurrency(value, baseCurrency), 'Đã chi']}
+                    formatter={(value: number) => [formatCurrency(value, baseCurrency), t('charts.spentAmount')]}
                     contentStyle={{ 
                       borderRadius: '16px', 
                       background: 'rgba(15, 23, 42, 0.85)', 

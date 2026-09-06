@@ -76,7 +76,7 @@
   </style>
 </head>
 
-<body class="text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
+<body data-page-key="termsTitle" class="text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
   <header class="sticky top-0 z-30 border-b border-white/80 dark:border-white/15 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-md">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
       <a href="./index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -85,7 +85,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
           </div>
         </div>
-        <span class="font-bold text-lg font-heading tracking-tight text-slate-900 dark:text-white">Expense Tracker</span>
+        <span class="font-bold text-lg font-heading tracking-tight text-slate-900 dark:text-white" data-i18n="appName">Expense Tracker</span>
       </a>
       
     </div>
@@ -164,7 +164,8 @@
   </main>
   
   <footer class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-    <p>&copy; 2026 Expense Tracker. All rights reserved.</p>
+    <p data-i18n="footerRights">&copy; 2026 Expense Tracker. All rights reserved.</p>
   </footer>
+  <script src="./i18n-static.js"></script>
 </body>
 </html>

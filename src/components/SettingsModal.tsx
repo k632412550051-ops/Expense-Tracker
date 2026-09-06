@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { 
   Settings as SettingsIcon,
   Moon,
@@ -21,9 +22,18 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  Languages
 } from 'lucide-react';
-import { AppSettings, CurrencyCode, CURRENCY_OPTIONS, UserProfile, Expense } from '../types';
+import { 
+  AppSettings, 
+  CurrencyCode, 
+  CURRENCY_OPTIONS, 
+  UserProfile, 
+  Expense, 
+  LanguageCode, 
+  SUPPORTED_LANGUAGES 
+} from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { getExchangeRate, fetchLiveExchangeRates, getRatesCacheInfo } from '../lib/exchangeRates';
 import { 
@@ -31,6 +41,7 @@ import {
   connectGoogleCalendar, 
   disconnectGoogleCalendar 
 } from '../lib/googleCalendar';
+import { changeAppLanguage } from '../i18n';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -65,7 +76,8 @@ export function SettingsModal({
   onSyncExpensesCalendar,
   onShowNotification
 }: SettingsModalProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'currency' | 'appearance' | 'calendar'>('general');
+  const { t, i18n } = useTranslation();
+  const [activeTab, setActiveTab] = useState<'general' | 'language' | 'currency' | 'appearance' | 'calendar'>('general');
   const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
   const [isSyncingAll, setIsSyncingAll] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(() => isGoogleCalendarConnected());
@@ -80,9 +92,9 @@ export function SettingsModal({
       setIsUpdatingRates(true);
       await fetchLiveExchangeRates(true);
       setRatesInfo(getRatesCacheInfo());
-      onShowNotification?.('Đã cập nhật tỷ giá thị trường thời gian thực! 💱');
+      onShowNotification?.(t('settings.ratesUpdated', { defaultValue: 'Đã cập nhật tỷ giá thị trường thời gian thực! 💱' }));
     } catch (err: any) {
-      onShowNotification?.('Không thể lấy tỷ giá mới lúc này.', 'error');
+      onShowNotification?.(t('settings.ratesError', { defaultValue: 'Không thể lấy tỷ giá mới lúc này.' }), 'error');
     } finally {
       setIsUpdatingRates(false);
     }
@@ -95,11 +107,11 @@ export function SettingsModal({
         await connectGoogleCalendar();
         setCalendarConnected(true);
         onUpdateSettings({ calendarAutoSync: true });
-        onShowNotification?.('Đã bật tính năng thông báo hoàn tiền! 🔔');
+        onShowNotification?.(t('settings.notifEnabled', { defaultValue: 'Đã bật tính năng thông báo hoàn tiền! 🔔' }));
       } catch (err: any) {
         setCalendarConnected(false);
         onUpdateSettings({ calendarAutoSync: false });
-        onShowNotification?.(err?.message || 'Không thể bật thông báo', 'error');
+        onShowNotification?.(err?.message || t('settings.notifError', { defaultValue: 'Không thể bật thông báo' }), 'error');
       } finally {
         setIsConnectingCalendar(false);
       }
@@ -107,12 +119,13 @@ export function SettingsModal({
       disconnectGoogleCalendar();
       setCalendarConnected(false);
       onUpdateSettings({ calendarAutoSync: false });
-      onShowNotification?.('Đã tắt thông báo.');
+      onShowNotification?.(t('settings.notifDisabled', { defaultValue: 'Đã tắt thông báo.' }));
     }
   };
 
-  const displayName = userProfile?.displayName || user.displayName || 'Người dùng Google';
+  const displayName = userProfile?.displayName || user.displayName || 'User';
   const userInitial = displayName.charAt(0).toUpperCase();
+  const currentLanguageCode = (i18n.language?.slice(0, 2) as LanguageCode) || 'vi';
 
   return (
     <AnimatePresence>
@@ -146,22 +159,23 @@ export function SettingsModal({
                 </div>
                 <div>
                   <h2 className="text-base font-black font-heading text-slate-900 dark:text-white tracking-tight">
-                    Cài đặt
+                    {t('settings.modalTitle', { defaultValue: 'Cài đặt hệ thống' })}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    Quản lý tài khoản, tiền tệ và giao diện
+                    {t('settings.modalSubtitle', { defaultValue: 'Quản lý tùy chọn, ngôn ngữ và tài khoản cá nhân' })}
                   </p>
                 </div>
               </div>
-              {/* Removed X button to rely on "Hoàn tất" button instead */}
             </div>
 
-            {/* Quick Tabs - shrink-0 ensures tabs never clip when switching tabs */}
-            <div className="flex items-center gap-1.5 px-5 sm:px-6 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/80 bg-white/20 dark:bg-slate-900/20 overflow-x-auto shrink-0 z-10">
+            {/* Quick Tabs - shrink-0 ensures tabs never clip when switching */}
+            <div className="flex items-center gap-1.5 px-5 sm:px-6 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/80 bg-white/20 dark:bg-slate-900/20 overflow-x-auto shrink-0 z-10 scrollbar-none">
               <button
+                type="button"
+                id="tab-btn-general"
                 onClick={() => setActiveTab('general')}
                 className={cn(
-                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'general'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -175,13 +189,37 @@ export function SettingsModal({
                   />
                 )}
                 <User className="w-3.5 h-3.5" />
-                <span>Tài khoản</span>
+                <span>{t('settings.tabGeneral', { defaultValue: 'Chung' })}</span>
               </button>
 
               <button
+                type="button"
+                id="tab-btn-language"
+                onClick={() => setActiveTab('language')}
+                className={cn(
+                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  activeTab === 'language'
+                    ? "text-white"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                )}
+              >
+                {activeTab === 'language' && (
+                  <motion.div
+                    layoutId="settingsTabIndicator"
+                    className="absolute inset-0 bg-blue-600 rounded-xl shadow-xs -z-10"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <Languages className="w-3.5 h-3.5" />
+                <span>{t('settings.tabLanguage', { defaultValue: 'Ngôn ngữ' })}</span>
+              </button>
+
+              <button
+                type="button"
+                id="tab-btn-currency"
                 onClick={() => setActiveTab('currency')}
                 className={cn(
-                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'currency'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -195,13 +233,15 @@ export function SettingsModal({
                   />
                 )}
                 <Coins className="w-3.5 h-3.5" />
-                <span>Tiền tệ ({settings.currency})</span>
+                <span>{t('settings.tabCurrency', { defaultValue: 'Tiền tệ' })} ({settings.currency})</span>
               </button>
 
               <button
+                type="button"
+                id="tab-btn-appearance"
                 onClick={() => setActiveTab('appearance')}
                 className={cn(
-                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'appearance'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -215,13 +255,15 @@ export function SettingsModal({
                   />
                 )}
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Giao diện</span>
+                <span>{t('settings.tabAppearance', { defaultValue: 'Giao diện' })}</span>
               </button>
 
               <button
+                type="button"
+                id="tab-btn-calendar"
                 onClick={() => setActiveTab('calendar')}
                 className={cn(
-                  "relative px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
+                  "relative px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 z-10",
                   activeTab === 'calendar'
                     ? "text-white"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -235,7 +277,7 @@ export function SettingsModal({
                   />
                 )}
                 <BellRing className="w-3.5 h-3.5" />
-                <span>Thông báo</span>
+                <span>{t('settings.tabNotifications', { defaultValue: 'Thông báo' })}</span>
               </button>
             </div>
 
@@ -271,18 +313,20 @@ export function SettingsModal({
                             {displayName}
                           </h3>
                           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            {user.email || 'Đã đăng nhập'}
+                            {user.email || t('auth.signedIn', { defaultValue: 'Đã đăng nhập' })}
                           </p>
                         </div>
                       </div>
 
                       <button
+                        type="button"
+                        id="settings-logout-btn"
                         onClick={onLogout}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-500 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                        title="Đăng xuất"
+                        title={t('auth.signOut')}
                       >
                         <LogOut className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Đăng xuất</span>
+                        <span className="hidden sm:inline">{t('auth.signOut')}</span>
                       </button>
                     </div>
 
@@ -298,10 +342,10 @@ export function SettingsModal({
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                            Chế độ riêng tư
+                            {t('settings.privacyModeTitle', { defaultValue: 'Chế độ riêng tư (Ẩn số tiền)' })}
                           </h4>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Ẩn số tiền khi mở ứng dụng ở nơi đông người
+                            {t('settings.privacyModeDesc', { defaultValue: 'Làm mờ số tiền để sử dụng an toàn ở nơi đông người' })}
                           </p>
                         </div>
                       </div>
@@ -321,6 +365,7 @@ export function SettingsModal({
 
                     {/* Budget & Category Management Entry Point */}
                     <div 
+                      id="settings-open-budget-btn"
                       onClick={() => {
                         onOpenBudgetModal();
                       }}
@@ -332,14 +377,77 @@ export function SettingsModal({
                         </div>
                         <div>
                           <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            Ngân sách & Danh mục
+                            {t('settings.budgetTitle', { defaultValue: 'Quản lý danh mục & hạn mức' })}
                           </h4>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Định mức hàng tháng, danh mục Thu - Chi và màu sắc
+                            {t('settings.budgetDesc', { defaultValue: 'Thêm, sửa, đổi màu hoặc xóa danh mục thu chi' })}
                           </p>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* TAB: LANGUAGE / NGÔN NGỮ */}
+                {activeTab === 'language' && (
+                  <motion.div 
+                    key="tab-language"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                        <Languages className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
+                        {t('settings.languageTitle', { defaultValue: 'Ngôn ngữ hiển thị' })}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                        {t('settings.languageSubtitle', { defaultValue: 'Chọn ngôn ngữ hiển thị trong ứng dụng (tự động lưu vào thiết bị)' })}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      {SUPPORTED_LANGUAGES.map((lang) => {
+                        const isSelected = currentLanguageCode === lang.code;
+                        return (
+                          <button
+                            key={lang.code}
+                            type="button"
+                            id={`settings-lang-${lang.code}`}
+                            onClick={async () => {
+                              await changeAppLanguage(lang.code);
+                              onUpdateSettings({ language: lang.code });
+                              onUpdateProfile?.({ language: lang.code });
+                              onShowNotification?.(t('settings.languageUpdated', { defaultValue: 'Đã cập nhật ngôn ngữ giao diện!' }));
+                            }}
+                            className={`w-full p-3.5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-50/90 dark:bg-blue-950/40 border-blue-500 ring-2 ring-blue-500/20'
+                                : 'bg-white/70 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60 hover:border-blue-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">{lang.flag}</span>
+                              <div className="text-left">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white block">
+                                  {lang.nativeName}
+                                </span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                  {lang.name}
+                                </span>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 )}
@@ -359,10 +467,10 @@ export function SettingsModal({
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
                           <Coins className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
-                          Đồng tiền cơ sở (Báo cáo & Tổng kết)
+                          {t('settings.baseCurrencyTitle', { defaultValue: 'Đồng tiền cơ sở' })}
                         </h3>
                         <span className="text-[11px] font-bold text-blue-600 dark:text-cyan-400">
-                          Hiện tại: {settings.currency}
+                          {t('settings.currentCurrency', { defaultValue: 'Đồng tiền hiện tại' })}: {settings.currency}
                         </span>
                       </div>
 
@@ -373,6 +481,7 @@ export function SettingsModal({
                             <button
                               key={c.code}
                               type="button"
+                              id={`settings-base-curr-${c.code}`}
                               onClick={() => {
                                 onUpdateSettings({ currency: c.code });
                                 onUpdateProfile?.({ baseCurrency: c.code });
@@ -410,11 +519,11 @@ export function SettingsModal({
                       <div className="flex items-center gap-1.5 mb-1.5">
                         <Plane className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
                         <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                          Ngoại tệ thường dùng
+                          {t('settings.frequentCurrenciesTitle', { defaultValue: 'Ngoại tệ thường dùng' })}
                         </h4>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">
-                        Lưu vào danh sách ngoại tệ yêu thích khi du học hoặc đi nước ngoài:
+                        {t('settings.frequentCurrenciesDesc', { defaultValue: 'Các loại tiền tệ hiển thị sẵn để chọn nhanh khi nhập chi tiêu' })}
                       </p>
 
                       <div className="flex flex-wrap gap-1.5">
@@ -427,6 +536,7 @@ export function SettingsModal({
                             <button
                               key={c.code}
                               type="button"
+                              id={`settings-freq-curr-${c.code}`}
                               onClick={() => {
                                 if (isBase) return;
                                 let updated: CurrencyCode[];
@@ -460,11 +570,11 @@ export function SettingsModal({
                           <div className="flex items-center gap-1.5">
                             <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                             <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                              Tỷ giá thị trường thời gian thực
+                              {t('settings.liveRatesTitle')}
                             </h4>
                           </div>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Chu kỳ 3 ngày/lần • Lần cuối: <span className="font-semibold text-slate-700 dark:text-slate-300">{ratesInfo.lastUpdatedText}</span>
+                            {t('settings.ratesCycle')} • {t('settings.lastUpdated')}: <span className="font-semibold text-slate-700 dark:text-slate-300">{ratesInfo.lastUpdatedText}</span>
                           </p>
                         </div>
 
@@ -474,13 +584,13 @@ export function SettingsModal({
                             onClick={() => setRateDisplayMode(rateDisplayMode === 'perVND' ? 'perForeign' : 'perVND')}
                             className="text-[10px] font-bold px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-2xs cursor-pointer"
                           >
-                            {rateDisplayMode === 'perVND' ? 'Theo ngoại tệ' : 'Theo VND'}
+                            {rateDisplayMode === 'perVND' ? t('settings.perForeign', { defaultValue: 'Theo ngoại tệ' }) : t('settings.perVND', { defaultValue: 'Theo VND' })}
                           </button>
                           <button
                             type="button"
                             disabled={isUpdatingRates}
                             onClick={handleRefreshRates}
-                            title="Làm mới tỷ giá ngay lập tức"
+                            title={t('settings.refreshRates')}
                             className="p-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-slate-600 transition-all cursor-pointer disabled:opacity-50"
                           >
                             <RefreshCw className={cn("w-3.5 h-3.5", isUpdatingRates && "animate-spin")} />
@@ -529,6 +639,7 @@ export function SettingsModal({
                       {/* Light */}
                       <button
                         type="button"
+                        id="theme-btn-light"
                         onClick={() => onUpdateSettings({ theme: 'light' })}
                         className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all cursor-pointer text-center ${
                           settings.theme === 'light'
@@ -540,7 +651,7 @@ export function SettingsModal({
                           <Sun className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-900 dark:text-white">Sáng</p>
+                          <p className="text-xs font-bold text-slate-900 dark:text-white">{t('settings.themeLight')}</p>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400">Crystal Light</p>
                         </div>
                       </button>
@@ -548,6 +659,7 @@ export function SettingsModal({
                       {/* Dark */}
                       <button
                         type="button"
+                        id="theme-btn-dark"
                         onClick={() => onUpdateSettings({ theme: 'dark' })}
                         className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all cursor-pointer text-center ${
                           settings.theme === 'dark'
@@ -559,7 +671,7 @@ export function SettingsModal({
                           <Moon className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-900 dark:text-white">Tối</p>
+                          <p className="text-xs font-bold text-slate-900 dark:text-white">{t('settings.themeDark')}</p>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400">Obsidian Glass</p>
                         </div>
                       </button>
@@ -567,6 +679,7 @@ export function SettingsModal({
                       {/* System */}
                       <button
                         type="button"
+                        id="theme-btn-system"
                         onClick={() => onUpdateSettings({ theme: 'system' })}
                         className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all cursor-pointer text-center ${
                           settings.theme === 'system'
@@ -578,15 +691,15 @@ export function SettingsModal({
                           <Laptop className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-900 dark:text-white">Hệ thống</p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400">Tự động</p>
+                          <p className="text-xs font-bold text-slate-900 dark:text-white">{t('settings.themeSystem')}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400">{t('settings.themeAuto')}</p>
                         </div>
                       </button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* TAB 4: GOOGLE CALENDAR - REFACTORED CLEAN UI WITH MASTER ON/OFF TOGGLE */}
+                {/* TAB 4: GOOGLE CALENDAR / NOTIFICATIONS */}
                 {activeTab === 'calendar' && (
                   <motion.div 
                     key="tab-calendar"
@@ -611,22 +724,22 @@ export function SettingsModal({
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                Thông báo nhắc hoàn tiền
+                                {t('settings.reimbursementNotifTitle')}
                               </h4>
                               {calendarConnected ? (
                                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
-                                  <CheckCircle2 className="w-3 h-3" /> Đang bật
+                                  <CheckCircle2 className="w-3 h-3" /> {t('settings.statusOn')}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium border border-slate-200 dark:border-slate-700">
-                                  Đang tắt
+                                  {t('settings.statusOff')}
                                 </span>
                               )}
                             </div>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               {calendarConnected 
-                                ? 'Đã cấp quyền gửi thông báo trình duyệt'
-                                : 'Bật để tự động nhắc lịch các khoản chi ứng trước qua thông báo'}
+                                ? t('settings.notifPermissionGranted')
+                                : t('settings.notifPermissionPrompt')}
                             </p>
                           </div>
                         </div>
@@ -663,25 +776,26 @@ export function SettingsModal({
                         <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700/60 shadow-xs space-y-2.5">
                           <div className="flex items-center justify-between">
                             <h5 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                              Thời gian hẹn nhắc hoàn tiền mặc định
+                              {t('settings.defaultLeadTimeTitle')}
                             </h5>
                             <span className="text-[11px] font-semibold text-blue-600 dark:text-cyan-400">
-                              Sau {settings.calendarReminderDays || 3} ngày
+                              {t('settings.afterDays', { count: settings.calendarReminderDays || 3 })}
                             </span>
                           </div>
 
                           <div className="grid grid-cols-4 gap-2">
                             {[
-                              { days: 3, label: '3 ngày' },
-                              { days: 5, label: '5 ngày' },
-                              { days: 7, label: '1 tuần' },
-                              { days: 14, label: '2 tuần' },
+                              { days: 3, label: t('settings.days3', { defaultValue: '3 ngày' }) },
+                              { days: 5, label: t('settings.days5', { defaultValue: '5 ngày' }) },
+                              { days: 7, label: t('settings.week1', { defaultValue: '1 tuần' }) },
+                              { days: 14, label: t('settings.weeks2', { defaultValue: '2 tuần' }) },
                             ].map((opt) => {
                               const isSelected = (settings.calendarReminderDays || 3) === opt.days;
                               return (
                                 <button
                                   key={opt.days}
                                   type="button"
+                                  id={`reminder-days-btn-${opt.days}`}
                                   onClick={() => onUpdateSettings({ calendarReminderDays: opt.days })}
                                   className={cn(
                                     "py-2 px-1 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center",
@@ -702,29 +816,30 @@ export function SettingsModal({
                           <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/80 to-indigo-50/60 dark:from-slate-800/80 dark:to-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                             <div>
                               <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                                Bật thông báo cho khoản chờ
+                                {t('settings.syncPendingTitle')}
                               </h5>
                               <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                                 {expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length > 0
-                                  ? `Có ${expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length} khoản chi chờ hoàn tiền chưa bật thông báo.`
-                                  : 'Tất cả các khoản chi hoàn tiền đã được lên lịch thông báo.'}
+                                  ? t('settings.syncPendingCount', { count: expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length })
+                                  : t('settings.syncAllScheduled')}
                               </p>
                             </div>
 
                             <button
                               type="button"
+                              id="sync-all-reimbursements-btn"
                               disabled={isSyncingAll}
                               onClick={async () => {
                                 try {
                                   setIsSyncingAll(true);
                                   const count = await onSyncExpensesCalendar();
                                   if (count > 0) {
-                                    onShowNotification?.(`Đã bật thông báo cho ${count} khoản chi! 🔔`);
+                                    onShowNotification?.(t('settings.syncSuccess', { count }));
                                   } else {
-                                    onShowNotification?.('Tất cả các khoản chi hoàn tiền đã được bật thông báo từ trước.');
+                                    onShowNotification?.(t('settings.syncNone'));
                                   }
                                 } catch (e: any) {
-                                  onShowNotification?.(e?.message || 'Có lỗi khi cài đặt thông báo.', 'error');
+                                  onShowNotification?.(e?.message || t('settings.syncError'), 'error');
                                 } finally {
                                   setIsSyncingAll(false);
                                 }
@@ -732,14 +847,14 @@ export function SettingsModal({
                               className="py-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
                             >
                               <RefreshCw className={cn("w-3.5 h-3.5", isSyncingAll && "animate-spin")} />
-                              <span>{isSyncingAll ? 'Đang đồng bộ...' : 'Đồng bộ ngay'}</span>
+                              <span>{isSyncingAll ? t('settings.syncing') : t('settings.syncNow')}</span>
                             </button>
                           </div>
                         )}
                       </motion.div>
                     ) : (
                       <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700 text-center py-6 text-xs text-slate-500 dark:text-slate-400">
-                        Tính năng thông báo hiện đang tắt. Gạt công tắc sang Bật để tự động nhắc các khoản chi cần hoàn tiền.
+                        {t('settings.notifDisabledExplainer')}
                       </div>
                     )}
                   </motion.div>
@@ -756,7 +871,7 @@ export function SettingsModal({
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                 >
-                  Giới thiệu
+                  {t('settings.footerAbout', { defaultValue: 'Giới thiệu' })}
                 </a>
                 <span>•</span>
                 <a
@@ -765,7 +880,7 @@ export function SettingsModal({
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                 >
-                  Quyền riêng tư
+                  {t('settings.footerPrivacy', { defaultValue: 'Chính sách bảo mật' })}
                 </a>
                 <span>•</span>
                 <a
@@ -774,14 +889,16 @@ export function SettingsModal({
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                 >
-                  Điều khoản
+                  {t('settings.footerTerms', { defaultValue: 'Điều khoản' })}
                 </a>
               </div>
               <button
+                type="button"
+                id="settings-done-btn"
                 onClick={onClose}
                 className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer"
               >
-                Hoàn tất
+                {t('settings.done', { defaultValue: 'Hoàn tất' })}
               </button>
             </div>
           </motion.div>

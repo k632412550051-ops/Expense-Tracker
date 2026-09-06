@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { BudgetMap, Category, PRESET_CATEGORY_COLORS, getCategoryColor } from '../types';
-import { X, Save, Plus, Trash2, Edit2, Palette } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { BudgetMap, Category, PRESET_CATEGORY_COLORS, getCategoryColor, CurrencyCode } from '../types';
+import { useCategoryTranslation } from '../lib/useCategoryTranslation';
+import { X, Save, Plus, Trash2, Edit2 } from 'lucide-react';
 
 interface BudgetSettingsModalProps {
   budgets: BudgetMap;
   categories: Category[];
   incomeCategories: Category[];
   categoryColors?: Record<string, string>;
+  baseCurrency?: CurrencyCode;
   onSave: (
     newBudgets: BudgetMap, 
     newCategories: Category[], 
@@ -18,8 +21,19 @@ interface BudgetSettingsModalProps {
   onClose: () => void;
 }
 
-export function BudgetSettingsModal({ budgets, categories, incomeCategories, categoryColors = {}, onSave, onClose }: BudgetSettingsModalProps) {
-  const [tab, setTab] = useState<'expense' | 'income'>('income');
+export function BudgetSettingsModal({ 
+  budgets, 
+  categories, 
+  incomeCategories, 
+  categoryColors = {}, 
+  baseCurrency = 'VND',
+  onSave, 
+  onClose 
+}: BudgetSettingsModalProps) {
+  const { t } = useTranslation();
+  const { translateCategory } = useCategoryTranslation();
+
+  const [tab, setTab] = useState<'expense' | 'income'>('expense');
   const [localBudgets, setLocalBudgets] = useState<BudgetMap>({ ...budgets });
   const [localCategories, setLocalCategories] = useState<Category[]>([...categories]);
   const [localIncomeCategories, setLocalIncomeCategories] = useState<Category[]>([...incomeCategories]);
@@ -151,10 +165,16 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
 
         <div className="flex items-center justify-between p-5 border-b border-blue-100/40 dark:border-slate-800 shrink-0">
           <div>
-            <h2 className="text-lg font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">Thiết lập danh mục</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tùy chỉnh tên, màu sắc và ngân sách</p>
+            <h2 className="text-lg font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
+              {t('budget.modalTitle')}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {t('budget.modalSubtitle')}
+            </p>
           </div>
           <button 
+            type="button"
+            id="close-budget-modal-btn"
             onClick={onClose} 
             className="p-2 hover:bg-white/80 dark:hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
@@ -166,22 +186,24 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
           <div className="flex p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-950/50 border border-white/70 dark:border-white/10 backdrop-blur-md mb-5">
             <button
               type="button"
-              onClick={() => setTab('income')}
-              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${tab === 'income' ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/10' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
-            >
-              Khoản thu
-            </button>
-            <button
-              type="button"
+              id="budget-tab-expense"
               onClick={() => setTab('expense')}
               className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${tab === 'expense' ? 'bg-white dark:bg-slate-800 text-blue-700 dark:text-cyan-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/10' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
             >
-              Khoản chi & Ngân sách
+              {t('budget.tabExpense')}
+            </button>
+            <button
+              type="button"
+              id="budget-tab-income"
+              onClick={() => setTab('income')}
+              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${tab === 'income' ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-md shadow-blue-500/10 border border-white/80 dark:border-white/10' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+            >
+              {t('budget.tabIncome')}
             </button>
           </div>
 
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 font-medium">
-            Thêm, xóa, hoặc đổi tên danh mục{tab === 'expense' ? ' và điều chỉnh hạn mức chi tiêu' : ''}. Nhấp vào tên để đổi.
+            {t('budget.description')}
           </p>
           
           <div className="flex gap-2 mb-6">
@@ -191,12 +213,13 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
               type="text"
               value={newCatName}
               onChange={e => setNewCatName(e.target.value)}
-              placeholder="Tên danh mục mới..."
+              placeholder={t('budget.addCategoryPlaceholder')}
               className="flex-1 px-3.5 py-2.5 bg-white/60 dark:bg-slate-950/50 border border-white/80 dark:border-white/15 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 text-xs sm:text-sm shadow-inner shadow-blue-900/5 font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
             />
             <button 
               type="button"
+              id="add-category-btn"
               onClick={handleAddCategory}
               disabled={!newCatName.trim()}
               className="px-4 py-2.5 liquid-glass-btn-primary text-white rounded-2xl disabled:opacity-50 flex items-center justify-center transition-all cursor-pointer shadow-xs"
@@ -207,7 +230,7 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
 
           <div className="flex flex-col gap-4 pr-1">
             {currentList.length === 0 ? (
-               <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-6 font-medium">Chưa có danh mục nào.</p>
+               <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-6 font-medium">{t('budget.noCategories')}</p>
             ) : currentList.map(category => {
               const currentColor = localColors[category] || getCategoryColor(category, tab === 'income' ? 'income' : 'expense');
               const isPickerOpen = colorPickerCategory === category;
@@ -220,17 +243,18 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                     <div className="relative">
                       <button
                         type="button"
+                        id={`category-color-swatch-${category}`}
                         onClick={() => setColorPickerCategory(isPickerOpen ? null : category)}
                         className="w-6 h-6 rounded-full ring-2 ring-white dark:ring-white/20 shadow-xs flex items-center justify-center hover:scale-110 transition-transform cursor-pointer"
                         style={{ backgroundColor: currentColor }}
-                        title="Chọn màu đại diện"
+                        title={t('budget.editColor')}
                       />
 
                       {/* Color Palette Popover */}
                       {isPickerOpen && (
                         <div className="absolute left-0 top-8 z-30 bg-white dark:bg-slate-900 p-3 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 w-56 flex flex-col gap-2">
                           <div className="text-xs font-semibold text-gray-500 dark:text-slate-400 flex items-center justify-between">
-                            <span>Bảng màu danh mục</span>
+                            <span>{t('budget.editColor')}</span>
                             <button 
                               type="button" 
                               onClick={() => setColorPickerCategory(null)}
@@ -251,7 +275,7 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                             ))}
                           </div>
                           <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
-                            <span className="text-xs text-gray-500 dark:text-slate-400">Tùy chọn:</span>
+                            <span className="text-xs text-gray-500 dark:text-slate-400">{t('common.edit')}:</span>
                             <input
                               id={`color-picker-${category}`}
                               name={`color-picker-${category}`}
@@ -296,17 +320,19 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                             setEditCategoryName(category);
                           }
                         }}
-                        title="Nhấn để đổi tên"
+                        title={t('budget.rename')}
                       >
-                        {category}
+                        {translateCategory(category)}
                         <Edit2 className="w-3 h-3 text-gray-300 dark:text-slate-600 group-hover:text-emerald-500" />
                       </span>
                     )}
                   </div>
                   <button 
                     type="button"
+                    id={`delete-category-${category}`}
                     onClick={() => handleDeleteCategory(category)}
                     className="text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-50/50 dark:hover:bg-red-950/30 cursor-pointer"
+                    title={t('common.delete')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -321,10 +347,10 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
                       step="10000"
                       value={localBudgets[category] || ''}
                       onChange={(e) => handleChange(category, e.target.value)}
-                      className="w-full pl-4 pr-12 py-2 bg-white/70 dark:bg-slate-900/60 border border-white/90 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 text-xs sm:text-sm font-semibold shadow-inner shadow-blue-900/5 text-slate-800 dark:text-white"
+                      className="w-full pl-4 pr-16 py-2 bg-white/70 dark:bg-slate-900/60 border border-white/90 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 text-xs sm:text-sm font-semibold shadow-inner shadow-blue-900/5 text-slate-800 dark:text-white"
                       placeholder="0"
                     />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-xs font-bold">VNĐ</span>
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-xs font-bold">{baseCurrency}</span>
                   </div>
                 )}
               </div>
@@ -336,21 +362,23 @@ export function BudgetSettingsModal({ budgets, categories, incomeCategories, cat
         <div className="p-4 border-t border-blue-100/40 dark:border-slate-800 flex justify-end gap-3 bg-white/40 dark:bg-slate-900/40 shrink-0">
           <button 
             type="button" 
+            id="cancel-budget-modal-btn"
             onClick={onClose} 
             className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-slate-800 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer"
           >
-            Hủy
+            {t('common.cancel')}
           </button>
           <button 
+            type="button"
+            id="save-budget-modal-btn"
             onClick={handleSubmit} 
             className="liquid-glass-btn-primary liquid-crystal-sheen px-5 py-2.5 text-white rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md shadow-blue-500/25"
           >
             <Save className="w-4 h-4" /> 
-            Lưu thay đổi
+            {t('budget.saveChanges')}
           </button>
         </div>
       </div>
     </div>
   );
 }
-

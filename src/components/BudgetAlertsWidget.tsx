@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Expense, BudgetMap, Category, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { getExpenseConvertedAmount } from '../lib/exchangeRates';
+import { useCategoryTranslation } from '../lib/useCategoryTranslation';
 import { AlertTriangle, Edit2 } from 'lucide-react';
 
 interface BudgetAlertsWidgetProps {
@@ -14,6 +16,9 @@ interface BudgetAlertsWidgetProps {
 }
 
 export function BudgetAlertsWidget({ expenses, budgets, categories, categoryColors, onEditClick, baseCurrency = 'VND' }: BudgetAlertsWidgetProps) {
+  const { t } = useTranslation();
+  const { translateCategory } = useCategoryTranslation();
+
   const spendingByCategory = useMemo(() => {
     const sums: Record<Category, number> = {};
     categories.forEach(c => sums[c] = 0);
@@ -32,15 +37,17 @@ export function BudgetAlertsWidget({ expenses, budgets, categories, categoryColo
 
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
-          Hạn mức ngân sách
+          {t('budgetAlerts.title')}
         </h2>
         {onEditClick && (
           <button 
+            type="button"
+            id="edit-budget-limits-btn"
             onClick={onEditClick}
             className="liquid-glass-pill text-xs font-bold text-blue-600 dark:text-cyan-400 hover:text-blue-700 dark:hover:text-cyan-300 hover:bg-white/90 dark:hover:bg-slate-800 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-2xs border border-white/80 dark:border-white/10 cursor-pointer"
           >
             <Edit2 className="w-3.5 h-3.5" />
-            <span>Chỉnh sửa</span>
+            <span>{t('budgetAlerts.edit')}</span>
           </button>
         )}
       </div>
@@ -64,10 +71,12 @@ export function BudgetAlertsWidget({ expenses, budgets, categories, categoryColo
                     className="w-3 h-3 rounded-full shrink-0 ring-2 ring-white dark:ring-white/20 shadow-xs" 
                     style={{ backgroundColor: catColor }}
                   />
-                  <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200">{category}</span>
+                  <span className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+                    {translateCategory(category)}
+                  </span>
                   {isOverBudget && (
                     <div className="flex items-center gap-1 text-[10px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border border-rose-200/60 dark:border-rose-900/50 px-2 py-0.5 rounded-full">
-                      <AlertTriangle className="w-3 h-3" /> Vượt hạn mức
+                      <AlertTriangle className="w-3 h-3" /> {t('budgetAlerts.overBudget')}
                     </div>
                   )}
                 </div>

@@ -113,6 +113,22 @@ export type CurrencyCode =
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type PersonaType = 'student' | 'worker' | 'nomad' | 'family';
+export type LanguageCode = 'vi' | 'en' | 'ja' | 'ko' | 'zh';
+
+export interface LanguageOption {
+  code: LanguageCode;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: 'vi', name: 'Tiếng Việt', nativeName: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
+  { code: 'zh', name: 'Chinese', nativeName: '简体中文', flag: '🇨🇳' },
+];
 
 export interface UserProfile {
   displayName?: string;
@@ -121,12 +137,14 @@ export interface UserProfile {
   frequentCurrencies?: CurrencyCode[];
   monthlyBudget?: number;
   onboarded?: boolean;
+  language?: LanguageCode;
 }
 
 export interface AppSettings {
   currency: CurrencyCode; // Base currency (defaults to VND)
   theme: ThemeMode;
   privacyMode: boolean;
+  language?: LanguageCode; // App UI language (vi, en, ja, ko, zh)
   travelCurrency?: CurrencyCode; // Quick currency for spending while abroad/traveling
   customExchangeRates?: Record<string, number>; // Pair like "USD_VND" => 25400
   calendarAutoSync?: boolean; // Automatically sync reimbursable expenses to Google Calendar

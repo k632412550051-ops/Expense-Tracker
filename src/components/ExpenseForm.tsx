@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
 import { PlusCircle, Check, Calendar as CalendarIcon, BellRing, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { calculateReminderDate } from '../lib/googleCalendar';
 import { PERSONA_CONFIGS } from '../lib/persona';
+import { useCategoryTranslation } from '../lib/useCategoryTranslation';
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
@@ -23,6 +25,9 @@ export function ExpenseForm({
   baseCurrency = 'VND',
   userPersona,
 }: ExpenseFormProps) {
+  const { t } = useTranslation();
+  const { translateCategory } = useCategoryTranslation();
+
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [amount, setAmount] = useState<string>('');
 
@@ -76,13 +81,8 @@ export function ExpenseForm({
     e.preventDefault();
     if (!amount || isNaN(Number(amount))) return;
     const numAmount = Number(amount);
-    if (numAmount <= 0) {
-      // Don't allow negative or zero expenses
-      return;
-    }
-    if (!category) {
-      return; // Must have a category
-    }
+    if (numAmount <= 0) return;
+    if (!category) return;
     
     try {
       await onAddExpense({
@@ -123,7 +123,7 @@ export function ExpenseForm({
             <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <h2 className="text-base sm:text-lg font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
-            Thêm giao dịch
+            {t('form.addTransaction')}
           </h2>
         </div>
 
@@ -131,6 +131,7 @@ export function ExpenseForm({
         <div className="flex p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-900/60 border border-white/70 dark:border-white/15 backdrop-blur-md relative self-start sm:self-auto">
           <button
             type="button"
+            id="form-tab-expense"
             onClick={() => setType('expense')}
             className={cn(
               "relative px-3.5 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer z-10",
@@ -146,10 +147,11 @@ export function ExpenseForm({
                 transition={{ type: "spring", stiffness: 450, damping: 35 }}
               />
             )}
-            Chi tiêu
+            {t('form.expense')}
           </button>
           <button
             type="button"
+            id="form-tab-income"
             onClick={() => setType('income')}
             className={cn(
               "relative px-3.5 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer z-10",
@@ -165,7 +167,7 @@ export function ExpenseForm({
                 transition={{ type: "spring", stiffness: 450, damping: 35 }}
               />
             )}
-            Thu nhập
+            {t('form.income')}
           </button>
         </div>
       </div>
@@ -175,7 +177,7 @@ export function ExpenseForm({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="expense-amount" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
-              Số tiền ({baseCurrency})
+              {t('form.amount')} ({baseCurrency})
             </label>
           </div>
 
@@ -199,7 +201,9 @@ export function ExpenseForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="expense-category" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Danh mục</label>
+          <label htmlFor="expense-category" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
+            {t('form.category')}
+          </label>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div 
               key={type}
@@ -216,7 +220,9 @@ export function ExpenseForm({
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all text-sm font-medium cursor-pointer"
               >
                 {currentCategories.map(cat => (
-                  <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{cat}</option>
+                  <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                    {translateCategory(cat)}
+                  </option>
                 ))}
               </select>
             </motion.div>
@@ -224,7 +230,9 @@ export function ExpenseForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="expense-date" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Ngày</label>
+          <label htmlFor="expense-date" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
+            {t('form.date')}
+          </label>
           <input
             id="expense-date"
             name="expense-date"
@@ -237,7 +245,9 @@ export function ExpenseForm({
         </div>
 
         <div className="flex flex-col gap-1.5 relative">
-          <label htmlFor="expense-note" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">Ghi chú</label>
+          <label htmlFor="expense-note" className="text-xs font-bold text-slate-700 dark:text-slate-200 tracking-wide">
+            {t('form.note')}
+          </label>
           <input
             id="expense-note"
             name="expense-note"
@@ -250,7 +260,7 @@ export function ExpenseForm({
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             className="px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all text-sm shadow-inner shadow-blue-900/5"
-            placeholder="Ví dụ: Cà phê sáng, ăn trưa, vé máy bay"
+            placeholder={t('form.notePlaceholder')}
           />
           {showSuggestions && filteredNotes.length > 0 && (
             <div className="absolute top-full mt-1.5 w-full liquid-glass-elevated border border-white/90 dark:border-white/15 rounded-2xl shadow-xl z-20 max-h-40 overflow-y-auto p-1">
@@ -274,7 +284,7 @@ export function ExpenseForm({
             <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
                 <Zap className="w-2.5 h-2.5 text-amber-500" />
-                Gợi ý nhanh:
+                {t('form.quickSuggestions')}:
               </span>
               {personaSuggestions.slice(0, 4).map((s) => (
                 <button
@@ -305,14 +315,15 @@ export function ExpenseForm({
               <input
                 type="checkbox"
                 id="isReimbursable"
+                name="isReimbursable"
                 checked={isReimbursable}
                 onChange={(e) => setIsReimbursable(e.target.checked)}
                 className="w-4 h-4 text-blue-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
               />
               <label htmlFor="isReimbursable" className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none flex items-center gap-1.5">
-                <span>Chi ứng trước (cần đòi / hoàn lại)</span>
+                <span>{t('form.reimbursable')}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/50 dark:border-blue-900/50">
-                  Có thông báo
+                  {t('form.hasNotification')}
                 </span>
               </label>
             </div>
@@ -325,7 +336,7 @@ export function ExpenseForm({
               >
                 <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                   <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
-                  <span className="font-medium">Ngày hẹn hoàn tiền:</span>
+                  <span className="font-medium">{t('form.reminderDate')}:</span>
                   <input
                     id="expense-reminder-date"
                     name="expense-reminder-date"
@@ -337,7 +348,7 @@ export function ExpenseForm({
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-blue-700 dark:text-cyan-300 font-medium">
                   <BellRing className="w-3.5 h-3.5 shrink-0" />
-                  <span>Sẽ nhắc nhở khi đến ngày hẹn</span>
+                  <span>{t('form.willNotify')}</span>
                 </div>
               </motion.div>
             )}
@@ -349,10 +360,11 @@ export function ExpenseForm({
         layout
         whileTap={{ scale: 0.98 }}
         type="submit"
+        id="expense-form-submit-btn"
         className="liquid-glass-btn-primary liquid-crystal-sheen mt-2 flex items-center justify-center gap-2 text-white font-bold py-3 px-6 rounded-2xl transition-all cursor-pointer"
       >
         <PlusCircle className="w-4 h-4" />
-        <span>Lưu giao dịch</span>
+        <span>{t('form.saveTransaction')}</span>
       </motion.button>
     </motion.form>
   );

@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFirebaseData } from './hooks/useFirebaseData';
 import { loginWithGoogle, logout } from './lib/firebase';
 import { Expense, AppSettings, DEFAULT_SETTINGS, PersonaType, CurrencyCode } from './types';
@@ -37,8 +38,13 @@ import {
 import { triggerDueReminderNotifications } from './lib/notifications';
 
 export default function App() {
+  const { t } = useTranslation();
   const { 
     user, 
+    firebaseUser,
+    isGuestMode,
+    enterGuestMode,
+    exitGuestMode,
     loading, 
     userProfile,
     categories, 
@@ -56,6 +62,7 @@ export default function App() {
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [isOnboardingDismissed, setIsOnboardingDismissed] = useState(false);
 
   // App Settings (Currency, Theme, Privacy Mode)
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -182,7 +189,7 @@ export default function App() {
       calendarAutoSync: data.enableNotifications 
     });
 
-    if (user) {
+    if (firebaseUser) {
       await updateUserProfile({
         displayName: data.displayName,
         persona: data.persona,
@@ -200,6 +207,19 @@ export default function App() {
       }
       setIsOnboardingOpen(false);
       showNotification(`Đã cập nhật hồ sơ của ${data.displayName}!`);
+    } else {
+      enterGuestMode(data.displayName || 'Khách');
+      if (data.monthlyBudget && categories.length > 0) {
+        const perCat = Math.round(data.monthlyBudget / categories.length);
+        const newBudgets: Record<string, number> = {};
+        categories.forEach(cat => {
+          newBudgets[cat] = perCat;
+        });
+        await updateUserSettings(newBudgets, categories, incomeCategories, categoryColors);
+      }
+      setIsOnboardingOpen(false);
+      setIsOnboardingDismissed(true);
+      showNotification(`Chào mừng ${data.displayName || 'bạn'} đến với Expense Tracker!`);
     }
   };
   
@@ -431,7 +451,7 @@ export default function App() {
         <div className="min-h-screen liquid-glass-canvas flex flex-col items-center justify-center p-4">
             <div className="liquid-glass-elevated rounded-2xl px-6 py-4 flex items-center gap-3 border border-white/80 shadow-xl">
               <div className="w-5 h-5 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-              <div className="text-slate-700 font-bold text-sm">Đang tải dữ liệu...</div>
+              <div className="text-slate-700 dark:text-slate-200 font-bold text-sm">{t('common.loading')}</div>
             </div>
         </div>
      );
@@ -444,7 +464,7 @@ export default function App() {
               <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-blue-400/25 via-sky-300/20 to-transparent blur-3xl pointer-events-none" />
               <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gradient-to-tr from-cyan-400/20 via-blue-600/15 to-transparent blur-3xl pointer-events-none" />
 
-              <div className="liquid-glass-elevated p-8 sm:p-10 rounded-3xl shadow-2xl max-w-md w-full border border-white relative flex flex-col items-center justify-center text-center overflow-hidden">
+              <div className="liquid-glass-elevated p-8 sm:p-10 rounded-3xl shadow-2xl max-w-md w-full border border-white dark:border-white/15 dark:bg-slate-900/90 relative flex flex-col items-center justify-center text-center overflow-hidden">
                   {/* Top specular highlight */}
                   <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95 pointer-events-none" />
 
@@ -457,12 +477,12 @@ export default function App() {
 
                   <h1 className="text-3xl font-black font-heading text-slate-900 dark:text-white mb-2 tracking-tight">Expense Tracker</h1>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 font-medium leading-relaxed">
-                    Hệ thống quản lý tài chính thông minh, bảo mật & trực quan với phong cách Liquid Glass 3D, hỗ trợ đa tiền tệ (USD, VND, EUR...).
+                    {t('auth.welcomeDesc')}
                   </p>
                   
                   {authError && (
                     <div className="w-full mb-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-300 dark:border-rose-900/50 text-rose-800 dark:text-rose-300 text-xs text-left leading-relaxed">
-                      <p className="font-bold mb-1">Lỗi đăng nhập:</p>
+                      <p className="font-bold mb-1">{t('auth.authError')}</p>
                       <p>{authError}</p>
                     </div>
                   )}
@@ -473,14 +493,14 @@ export default function App() {
                      className="w-full mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3.5 px-6 rounded-2xl font-bold shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all flex items-center justify-center gap-2.5 cursor-pointer group"
                   >
                       <Sparkles className="w-4 h-4 text-amber-300" />
-                      <span>Bắt đầu thiết lập cá nhân hóa</span>
+                      <span>{t('auth.startPersonalize')}</span>
                   </button>
 
                   {/* Direct Google Login for returning users */}
                   <button 
                      onClick={handleGoogleLogin}
                      disabled={isLoggingIn}
-                     className="w-full liquid-glass-pill hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-white py-3 px-6 rounded-2xl font-semibold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-3 cursor-pointer border border-white/90 dark:border-white/15 group disabled:opacity-70 disabled:cursor-not-allowed"
+                     className="w-full mb-2 liquid-glass-pill hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-white py-3 px-6 rounded-2xl font-semibold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-3 cursor-pointer border border-white/90 dark:border-white/15 group disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                       {isLoggingIn ? (
                         <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
@@ -492,10 +512,22 @@ export default function App() {
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                         </svg>
                       )}
-                      <span>{isLoggingIn ? 'Đang xác thực...' : 'Đã có tài khoản? Đăng nhập ngay'}</span>
+                      <span>{isLoggingIn ? t('auth.signingIn') : t('auth.alreadyHaveAccount')}</span>
                   </button>
 
-
+                  {/* Direct Guest Experience Button */}
+                  <button 
+                     type="button"
+                     id="welcome-guest-btn"
+                     onClick={() => {
+                       enterGuestMode('Khách');
+                       showNotification('Đã bắt đầu trải nghiệm ở chế độ Khách');
+                     }}
+                     className="w-full text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white py-2 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                     <span>{t('onboarding.continueAsGuest', { defaultValue: 'Trải nghiệm ngay không cần tài khoản' })}</span>
+                     <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
 
                   {/* Public Legal & App info links */}
                   <div className="mt-5 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
@@ -505,7 +537,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                     >
-                      Giới thiệu ứng dụng
+                      {t('settings.footerAbout')}
                     </a>
                     <span>•</span>
                     <a 
@@ -514,7 +546,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                     >
-                      Chính sách quyền riêng tư
+                      {t('settings.footerPrivacy')}
                     </a>
                     <span>•</span>
                     <a 
@@ -523,7 +555,7 @@ export default function App() {
                       rel="noopener noreferrer"
                       className="hover:text-blue-600 dark:hover:text-cyan-400 underline transition-colors"
                     >
-                      Điều khoản
+                      {t('settings.footerTerms')}
                     </a>
                   </div>
               </div>
@@ -577,17 +609,17 @@ export default function App() {
                   ? 'text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700'
                   : 'text-slate-600 dark:text-slate-300'
               }`}
-              title={settings.privacyMode ? "Đang ẩn số dư — Bấm để hiện" : "Bấm để ẩn số dư (Chế độ riêng tư)"}
+              title={settings.privacyMode ? t('dashboard.privacyHiddenTip') : t('dashboard.privacyVisibleTip')}
             >
               {settings.privacyMode ? (
                 <>
                   <EyeOff className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="hidden sm:inline">Ẩn số dư</span>
+                  <span className="hidden sm:inline">{t('dashboard.hideBalance')}</span>
                 </>
               ) : (
                 <>
                   <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Hiện số dư</span>
+                  <span className="hidden sm:inline">{t('dashboard.showBalance')}</span>
                 </>
               )}
             </button>
@@ -597,7 +629,7 @@ export default function App() {
               id="settings-trigger-btn"
               onClick={() => setIsSettingsOpen(true)}
               className="liquid-glass-pill text-xs font-bold flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-white/90 dark:border-white/10 group"
-              title="Mở Cài đặt (Tài khoản, Tiền tệ, Giao diện)"
+              title={t('dashboard.settingsTooltip')}
             >
               {user.photoURL ? (
                 <img 
@@ -624,7 +656,7 @@ export default function App() {
         {/* Month Selector Capsule */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white tracking-tight">
-            Tổng quan tháng {currentMonth.split('-')[1]}/{currentMonth.split('-')[0]}
+            {t('dashboard.monthOverview', { month: currentMonth.split('-')[1], year: currentMonth.split('-')[0] })}
           </h2>
           <div className="flex items-center gap-1.5 liquid-glass p-1 rounded-2xl border border-white/90 dark:border-white/15 shadow-2xs self-start sm:self-auto">
             <button
@@ -635,7 +667,7 @@ export default function App() {
                 setCurrentMonth(`${y}-${m.toString().padStart(2, '0')}`);
               }}
               className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
-              title="Tháng trước"
+              title={t('history.prevMonth')}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -657,7 +689,7 @@ export default function App() {
                 setCurrentMonth(`${y}-${m.toString().padStart(2, '0')}`);
               }}
               className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80 rounded-xl transition-all cursor-pointer"
-              title="Tháng sau"
+              title={t('history.nextMonth')}
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -671,11 +703,11 @@ export default function App() {
              <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
              <div className="flex items-center justify-between mb-2 sm:mb-3">
                <div className="flex items-center gap-1.5">
-                 <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Số dư</span>
+                 <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('dashboard.balance')}</span>
                  <button
                    onClick={() => handleUpdateSettings({ privacyMode: !settings.privacyMode })}
                    className="p-1 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/60 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                   title={settings.privacyMode ? "Hiện số dư" : "Ẩn số dư"}
+                   title={settings.privacyMode ? t('dashboard.privacyHiddenTip') : t('dashboard.privacyVisibleTip')}
                  >
                    {settings.privacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5" />}
                  </button>
@@ -689,7 +721,7 @@ export default function App() {
                  {formatCurrency(balance, settings.currency, settings.privacyMode)}
                </p>
                <p className="text-[10px] sm:text-[11px] font-semibold mt-0.5 truncate text-slate-400">
-                 {balance >= 0 ? 'Thặng dư' : 'Thâm hụt'}
+                 {balance >= 0 ? t('dashboard.surplus') : t('dashboard.deficit')}
                </p>
              </div>
           </div>
@@ -698,7 +730,7 @@ export default function App() {
           <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng thu</span>
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('dashboard.totalIncome')}</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <ArrowDownLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -708,7 +740,7 @@ export default function App() {
                 {formatCurrency(totalIncome, settings.currency, settings.privacyMode)}
               </p>
               <p className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5 truncate">
-                +{currentMonthIncomeList.length} khoản
+                {t('dashboard.itemsCount', { count: currentMonthIncomeList.length })}
               </p>
             </div>
           </div>
@@ -717,7 +749,7 @@ export default function App() {
           <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tổng chi</span>
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('dashboard.totalExpense')}</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-600 dark:text-rose-400">
                 <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -728,11 +760,11 @@ export default function App() {
               </p>
               {totalReimbursable > 0 ? (
                 <p className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 truncate">
-                  Chờ hoàn {formatCurrency(totalReimbursable, settings.currency, settings.privacyMode)}
+                  {t('dashboard.pendingReimbursement', { amount: formatCurrency(totalReimbursable, settings.currency, settings.privacyMode) })}
                 </p>
               ) : (
                 <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5 truncate">
-                  {currentMonthExpensesList.length} khoản
+                  {t('dashboard.expenseItemsCount', { count: currentMonthExpensesList.length })}
                 </p>
               )}
             </div>
@@ -742,7 +774,7 @@ export default function App() {
           <div className="liquid-glass liquid-glass-interactive liquid-crystal-sheen rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/15 flex flex-col justify-between relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hạn mức</span>
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('dashboard.budget')}</span>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
@@ -752,7 +784,7 @@ export default function App() {
                 {formatCurrency(totalBudget, settings.currency, settings.privacyMode)}
               </p>
               <p className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5 truncate">
-                {totalBudget > 0 ? `Đã dùng ${((totalSpent / totalBudget) * 100).toFixed(0)}%` : 'Chưa đặt'}
+                {totalBudget > 0 ? t('dashboard.budgetUsed', { percent: ((totalSpent / totalBudget) * 100).toFixed(0) }) : t('dashboard.budgetUnset')}
               </p>
             </div>
           </div>
@@ -802,7 +834,7 @@ export default function App() {
               </div>
             </div>
             <h2 className="text-xl sm:text-2xl font-black font-heading text-slate-900 dark:text-white tracking-tight">
-              Phân tích chi tiêu
+              {t('dashboard.expenseAnalytics')}
             </h2>
           </div>
           
@@ -837,7 +869,16 @@ export default function App() {
         userProfile={userProfile}
         onUpdateProfile={updateUserProfile}
         onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
-        onLogout={logout}
+        onLogout={async () => {
+          if (isGuestMode || !firebaseUser) {
+            exitGuestMode();
+            showNotification('Đã thoát chế độ khách');
+          } else {
+            await logout();
+            showNotification('Đã đăng xuất');
+          }
+          setIsSettingsOpen(false);
+        }}
         expenses={expenses}
         onSyncExpensesCalendar={handleSyncAllCalendarExpenses}
         onShowNotification={showNotification}
@@ -845,12 +886,17 @@ export default function App() {
 
       {/* Onboarding for Authenticated User if not yet onboarded */}
       <OnboardingModal
-        isOpen={isOnboardingOpen || Boolean(userProfile && !userProfile.onboarded)}
-        onClose={() => setIsOnboardingOpen(false)}
+        isOpen={(isOnboardingOpen || Boolean(userProfile && !userProfile.onboarded)) && !isOnboardingDismissed}
+        onClose={() => {
+          setIsOnboardingOpen(false);
+          setIsOnboardingDismissed(true);
+        }}
         onComplete={handleOnboardingComplete}
         onGoogleSignIn={handleGoogleLogin}
         isLoggingIn={isLoggingIn}
+        isLoggedIn={Boolean(user && !user.isAnonymous)}
         authError={authError}
+        initialName={userProfile?.displayName || user?.displayName || ''}
         initialBaseCurrency={settings.currency}
       />
 
@@ -882,22 +928,22 @@ export default function App() {
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
           <div className="liquid-glass-elevated rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-white dark:border-white/15 dark:bg-slate-900/90 relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 pointer-events-none" />
-            <h3 className="text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-2">Xác nhận xóa</h3>
+            <h3 className="text-lg font-extrabold font-heading text-slate-900 dark:text-white mb-2">{t('common.confirmDelete')}</h3>
             <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mb-6 font-medium leading-relaxed">
-              Bạn có chắc chắn muốn xóa giao dịch này? Hành động này không thể hoàn tác.
+              {t('common.confirmDeleteDesc')}
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirmId(null)}
                 className="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
               >
-                Hủy
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() => executeRemoveExpense(deleteConfirmId)}
                 className="px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 rounded-xl transition-all shadow-md shadow-rose-500/25 cursor-pointer"
               >
-                Xóa giao dịch
+                {t('common.delete')}
               </button>
             </div>
           </div>
