@@ -91,9 +91,11 @@
       feat6Title: "Cloud Synchronization",
       feat6Desc: "Sign in with Google to back up your records seamlessly across all your phones and desktop computers.",
       privacyTitle: "Privacy Policy - Expense Tracker",
+      privacyBadge: "Official Policy",
       privacyHeader: "Privacy Policy",
       privacyMeta: "Last updated: March 2026",
       termsTitle: "Terms of Service - Expense Tracker",
+      termsBadge: "Official Terms",
       termsHeader: "Terms of Service",
       termsMeta: "Last updated: March 2026"
     },
@@ -121,9 +123,11 @@
       feat6Title: "Googleアカウント同期",
       feat6Desc: "Googleログインでデータを安全にバックアップ。スマホやPC間で常に最新データが同期されます。",
       privacyTitle: "プライバシーポリシー - Expense Tracker",
+      privacyBadge: "公式ポリシー",
       privacyHeader: "プライバシーポリシー",
       privacyMeta: "最終更新日: 2026年3月",
       termsTitle: "利用規約 - Expense Tracker",
+      termsBadge: "公式利用規約",
       termsHeader: "利用規約",
       termsMeta: "最終更新日: 2026年3月"
     },
@@ -151,9 +155,11 @@
       feat6Title: "Google 클라우드 동기화",
       feat6Desc: "Google 계정으로 로그인하여 스마트폰과 PC 어디서나 안전하게 데이터를 실시간 동기화하세요.",
       privacyTitle: "개인정보 처리방침 - Expense Tracker",
+      privacyBadge: "공식 방침",
       privacyHeader: "개인정보 처리방침",
       privacyMeta: "최종 수정일: 2026년 3월",
       termsTitle: "이용약관 - Expense Tracker",
+      termsBadge: "공식 약관",
       termsHeader: "이용약관",
       termsMeta: "최종 수정일: 2026년 3월"
     },
@@ -181,9 +187,11 @@
       feat6Title: "Google 云端跨端同步",
       feat6Desc: "通过 Google 账号安全登录，手机与电脑跨设备数据即时同步，永不丢失记录。",
       privacyTitle: "隐私政策 - Expense Tracker",
+      privacyBadge: "官方政策",
       privacyHeader: "隐私政策",
       privacyMeta: "最近更新：2026年3月",
       termsTitle: "服务条款 - Expense Tracker",
+      termsBadge: "官方条款",
       termsHeader: "服务条款",
       termsMeta: "最近更新：2026年3月"
     }
