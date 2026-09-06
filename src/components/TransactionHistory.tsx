@@ -18,8 +18,7 @@ import {
   ArrowDownLeft,
   CalendarDays,
   ShieldCheck,
-  ExternalLink,
-  BellRing
+  ExternalLink
 } from 'lucide-react';
 import { createGoogleCalendarUrl } from '../lib/googleCalendar';
 
@@ -33,7 +32,6 @@ interface TransactionHistoryProps {
   onToggleResolved: (expense: Expense) => void;
   onDeleteExpense: (id: string) => void;
   baseCurrency?: CurrencyCode;
-  onSyncCalendar?: (expense: Expense) => Promise<void>;
 }
 
 export function TransactionHistory({
@@ -45,8 +43,7 @@ export function TransactionHistory({
   categoryColors,
   onToggleResolved,
   onDeleteExpense,
-  baseCurrency = 'VND',
-  onSyncCalendar
+  baseCurrency = 'VND'
 }: TransactionHistoryProps) {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [filterCategory, setFilterCategory] = useState<string>('Tất cả');
@@ -617,27 +614,12 @@ export function TransactionHistory({
                                   {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
                                 </span>
 
-                                {exp.calendarEventId ? (
-                                  <span
-                                    className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60"
-                                    title="Đã bật thông báo trình duyệt cho khoản chi này"
-                                  >
-                                    <BellRing className="w-2.5 h-2.5" />
-                                    <span>Đã bật thông báo</span>
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (onSyncCalendar) onSyncCalendar(exp);
-                                    }}
-                                    className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
-                                    title="Bật thông báo nhắc hoàn tiền"
-                                  >
-                                    <BellRing className="w-2.5 h-2.5" />
-                                    <span>+ Bật thông báo</span>
-                                  </button>
-                                )}
+                                <button
+                                  onClick={() => onToggleResolved(exp)}
+                                  className="px-2.5 py-0.5 text-[10px] text-blue-600 dark:text-cyan-400 hover:text-blue-700 bg-blue-50/60 dark:bg-blue-950/60 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-full font-bold transition-colors cursor-pointer"
+                                >
+                                  {exp.isResolved ? 'Hoàn tác' : 'Đã nhận'}
+                                </button>
                               </div>
                             )}
                           </div>
@@ -658,14 +640,6 @@ export function TransactionHistory({
                             )}
                           </div>
                           <div className="flex items-center gap-2 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                            {exp.isReimbursable && (
-                              <button
-                                onClick={() => onToggleResolved(exp)}
-                                className="px-2.5 py-1 text-xs text-blue-600 dark:text-cyan-400 hover:text-blue-700 bg-blue-50/60 dark:bg-blue-950/60 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-lg font-semibold transition-colors cursor-pointer"
-                              >
-                                {exp.isResolved ? 'Hoàn tác' : 'Đã nhận'}
-                              </button>
-                            )}
                             <button 
                               onClick={() => onDeleteExpense(exp.id)}
                               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
@@ -822,33 +796,11 @@ export function TransactionHistory({
                                       {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
                                     </span>
 
-                                    {exp.calendarEventId ? (
-                                      <span
-                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60"
-                                        title="Đã bật thông báo trình duyệt"
-                                      >
-                                        <BellRing className="w-2.5 h-2.5" />
-                                        <span>Đã bật thông báo</span>
-                                      </span>
-                                    ) : (
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          if (onSyncCalendar) onSyncCalendar(exp);
-                                        }}
-                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
-                                        title="Bật thông báo nhắc hoàn tiền"
-                                      >
-                                        <BellRing className="w-2.5 h-2.5" />
-                                        <span>+ Bật thông báo</span>
-                                      </button>
-                                    )}
-
                                     <button
                                       onClick={() => onToggleResolved(exp)}
-                                      className="text-[11px] text-blue-600 dark:text-cyan-400 hover:underline font-bold ml-1 cursor-pointer"
+                                      className="px-2.5 py-0.5 text-[10px] text-blue-600 dark:text-cyan-400 hover:text-blue-700 bg-blue-50/60 dark:bg-blue-950/60 hover:bg-blue-100/80 dark:hover:bg-blue-900/80 rounded-full font-bold transition-colors cursor-pointer"
                                     >
-                                      {exp.isResolved ? 'Hoàn tác' : 'Đã nhận tiền'}
+                                      {exp.isResolved ? 'Hoàn tác' : 'Đã nhận'}
                                     </button>
                                   </div>
                                 )}

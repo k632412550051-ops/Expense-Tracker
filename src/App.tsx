@@ -817,7 +817,6 @@ export default function App() {
             baseCurrency={settings.currency}
             onToggleResolved={handleToggleResolved}
             onDeleteExpense={handleRemoveExpense}
-            onSyncCalendar={handleSyncCalendarExpense}
           />
         </div>
 
