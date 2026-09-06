@@ -68,9 +68,9 @@
       .prose-content p, .prose-content li { color: #cbd5e1; }
     }
     .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-    .prose-content a { color: #2563eb; text-decoration: underline; }
+    .prose-content p a, .prose-content li a, .prose-content div.highlight-box a { color: #2563eb; text-decoration: underline; }
     @media (prefers-color-scheme: dark) {
-      .prose-content a { color: #38bdf8; }
+      .prose-content p a, .prose-content li a, .prose-content div.highlight-box a { color: #38bdf8; }
     }
     .prose-content .meta { color: #64748b; font-size: 0.875rem; margin-bottom: 2rem; }
   </style>
@@ -145,10 +145,19 @@
     <h2>7. Thông tin liên hệ (Contact)</h2>
     <p>Mọi câu hỏi liên quan đến Điều khoản Dịch vụ xin vui lòng gửi về email: <strong>k63.2412550051@ftu.edu.vn</strong>.</p>
 
-    <div style="display: flex; gap: 12px; margin-top: 32px;">
-      <a href="./" class="back-btn">← Quay lại Ứng dụng</a>
-      <a href="about.html" class="back-btn" style="background: #eff6ff; color: var(--primary);">Trang giới thiệu →</a>
-      <a href="privacy.html" class="back-btn" style="background: #f1f5f9; color: var(--text);">Chính sách quyền riêng tư →</a>
+    <div class="flex flex-wrap gap-3 mt-10 pt-6 border-t border-slate-200/60 dark:border-slate-700/60">
+      <a href="./" class="!no-underline inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md shadow-blue-500/20 text-sm">
+        &larr; Quay lại Ứng dụng
+      </a>
+      <a href="about.html" class="!no-underline inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/40 dark:hover:bg-blue-800/60 text-blue-700 dark:text-blue-300 font-semibold transition-all text-sm border border-blue-200 dark:border-blue-800/50">
+        Trang giới thiệu
+      </a>
+      <a href="terms.html" class="!no-underline inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700">
+        Điều khoản dịch vụ
+      </a>
+      <a href="privacy.html" class="!no-underline inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700">
+        Quyền riêng tư
+      </a>
     </div>
   
     </div>
