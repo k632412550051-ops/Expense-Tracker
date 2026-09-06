@@ -244,8 +244,8 @@ export function SettingsModal({
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                <CalendarIcon className="w-3.5 h-3.5" />
-                <span>Google Calendar</span>
+                <BellRing className="w-3.5 h-3.5" />
+                <span>Thông báo</span>
               </button>
             </div>
 
