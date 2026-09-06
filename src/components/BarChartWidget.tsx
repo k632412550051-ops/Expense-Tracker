@@ -169,7 +169,7 @@ export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND'
                 tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }}
               />
               <Tooltip 
-                cursor={{ fill: 'rgba(56, 189, 248, 0.08)' }}
+                itemStyle={{ color: '#f8fafc' }} cursor={{ fill: 'rgba(56, 189, 248, 0.08)' }}
                 formatter={(value: number) => [formatCurrency(value, baseCurrency), t('charts.totalSpent')]}
                 labelStyle={{ color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' }}
                 contentStyle={{ 
