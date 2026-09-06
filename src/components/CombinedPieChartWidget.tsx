@@ -110,9 +110,9 @@ export function CombinedPieChartWidget({
         </div>
       ) : (
         <>
-          <div className="flex-1 w-full relative min-h-[240px]" style={{ minWidth: 0, minHeight: 240 }}>
+          <div className="w-full" style={{ minWidth: 0, height: 260 }}>
             {isMounted && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height={260} minWidth={0}>
                 <PieChart>
                   <Pie
                     data={data}
