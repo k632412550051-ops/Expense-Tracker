@@ -465,98 +465,61 @@ export function SettingsModal({
                     </div>
 
                     {/* Section 3: Live Exchange Rates with 3-day update policy */}
-                    <div className="p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-3">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/50 pb-2.5">
+                    <div className="p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200/50 dark:border-slate-800/50">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                            <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                              Tỷ giá thị trường thời gian thực
+                            <TrendingUp className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
+                            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase">
+                              Tỷ giá thị trường
                             </h4>
                           </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Chu kỳ cập nhật 3 ngày/lần • Lần cuối: <span className="font-semibold text-slate-700 dark:text-slate-300">{ratesInfo.lastUpdatedText}</span>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                            Lần cuối: {ratesInfo.lastUpdatedText}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2 self-start sm:self-auto">
-                          {/* Toggle view: theo 1 VND vs theo 1 Ngoại tệ */}
-                          <div className="p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center text-[10px] font-bold">
-                            <button
-                              type="button"
-                              onClick={() => setRateDisplayMode('perVND')}
-                              className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                                rateDisplayMode === 'perVND'
-                                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-400 shadow-2xs font-extrabold'
-                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                              }`}
-                            >
-                              Theo 1 VND
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRateDisplayMode('perForeign')}
-                              className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                                rateDisplayMode === 'perForeign'
-                                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-400 shadow-2xs font-extrabold'
-                                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                              }`}
-                            >
-                              Theo 1 Ngoại tệ
-                            </button>
-                          </div>
-
-                          {/* Manual refresh button */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setRateDisplayMode(rateDisplayMode === 'perVND' ? 'perForeign' : 'perVND')}
+                            className="text-[10px] font-medium px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                          >
+                            {rateDisplayMode === 'perVND' ? 'Đảo chiều (Theo ngoại tệ)' : 'Đảo chiều (Theo VND)'}
+                          </button>
                           <button
                             type="button"
                             disabled={isUpdatingRates}
                             onClick={handleRefreshRates}
-                            title="Làm mới tỷ giá ngay lập tức"
-                            className="p-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-slate-600 transition-all cursor-pointer disabled:opacity-50"
+                            title="Làm mới tỷ giá"
+                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
                           >
                             <RefreshCw className={cn("w-3.5 h-3.5", isUpdatingRates && "animate-spin")} />
                           </button>
                         </div>
                       </div>
 
-                      {/* Exchange rates grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                         {CURRENCY_OPTIONS.filter(c => c.code !== 'VND').map(c => {
-                          if (rateDisplayMode === 'perVND') {
-                            const rateFromVND = getExchangeRate('VND', c.code);
-                            let formattedRate: string;
-                            if (rateFromVND < 0.0001) {
-                              formattedRate = rateFromVND.toFixed(6);
-                            } else if (rateFromVND < 0.01) {
-                              formattedRate = rateFromVND.toFixed(4);
-                            } else {
-                              formattedRate = rateFromVND.toFixed(2);
-                            }
-
-                            return (
-                              <div key={c.code} className="p-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-100 dark:border-slate-800/80 flex flex-col justify-between shadow-2xs">
-                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                                  <span>1 VND</span>
-                                  <span>{c.flag} {c.code}</span>
-                                </span>
-                                <span className="text-xs font-black text-blue-600 dark:text-cyan-400 mt-1 truncate">
-                                  ≈ {formattedRate} {c.code}
-                                </span>
-                              </div>
-                            );
-                          } else {
-                            const rateToVND = getExchangeRate(c.code, 'VND');
-                            return (
-                              <div key={c.code} className="p-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-100 dark:border-slate-800/80 flex flex-col justify-between shadow-2xs">
-                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                  <span>{c.flag}</span> 1 {c.code}
-                                </span>
-                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">
-                                  ≈ {Math.round(rateToVND).toLocaleString('vi-VN')} ₫
-                                </span>
-                              </div>
-                            );
+                          const isPerVND = rateDisplayMode === 'perVND';
+                          const rate = isPerVND ? getExchangeRate('VND', c.code) : getExchangeRate(c.code, 'VND');
+                          
+                          let formattedRate = rate.toFixed(isPerVND ? (rate < 0.0001 ? 6 : 4) : 0);
+                          if (!isPerVND) {
+                            formattedRate = new Intl.NumberFormat('vi-VN').format(rate);
                           }
+                          
+                          return (
+                            <div key={c.code} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800/60 last:border-0 sm:[&:nth-last-child(-n+2)]:border-0">
+                              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                                {!isPerVND && <span>{c.flag}</span>}
+                                <span>{isPerVND ? '1 ₫' : `1 ${c.code}`}</span>
+                              </span>
+                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                                {formattedRate} {isPerVND ? c.code : '₫'}
+                              </span>
+                            </div>
+                          );
                         })}
                       </div>
                     </div>
