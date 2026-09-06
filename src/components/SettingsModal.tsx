@@ -784,13 +784,6 @@ export function SettingsModal({
                             </button>
                           </div>
                         )}
-
-                        {/* 3. Concise informative guidelines */}
-                        <div className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
-                          <p className="font-bold text-slate-800 dark:text-slate-200">📌 Cách thức hoạt động:</p>
-                          <p>• Trình duyệt sẽ hiển thị thông báo nhắc nhở mỗi khi bạn mở ứng dụng vào các ngày đã hẹn.</p>
-                          <p>• Tính năng hoàn toàn hoạt động trên máy của bạn, bảo mật tuyệt đối.</p>
-                        </div>
                       </motion.div>
                     ) : (
                       <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700 text-center py-6 text-xs text-slate-500 dark:text-slate-400">
