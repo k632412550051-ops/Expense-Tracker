@@ -287,13 +287,13 @@ export function OnboardingModal({
                     </p>
 
                     {/* Auto-configured categories */}
-                    <div>
-                      <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    <div className="pt-0.5">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                         <Layers className="w-3 h-3 text-blue-500 shrink-0" />
-                        <span>Bộ 6 danh mục được tạo sẵn:</span>
+                        <span>Tạo sẵn {PERSONA_CONFIGS[persona].defaultCategories.length} danh mục:</span>
                       </div>
-                      <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 leading-relaxed">
-                        {PERSONA_CONFIGS[persona].defaultCategories.join(' • ')}
+                      <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate">
+                        {PERSONA_CONFIGS[persona].defaultCategories.join(', ')}
                       </p>
                     </div>
                   </motion.div>
