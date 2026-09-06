@@ -96,11 +96,11 @@ export function SettingsModal({
         await connectGoogleCalendar();
         setCalendarConnected(true);
         onUpdateSettings({ calendarAutoSync: true });
-        onShowNotification?.('Đã bật đồng bộ Google Calendar! 📅');
+        onShowNotification?.('Đã bật tính năng thông báo hoàn tiền! 🔔');
       } catch (err: any) {
         setCalendarConnected(false);
         onUpdateSettings({ calendarAutoSync: false });
-        onShowNotification?.(err?.message || 'Không thể kết nối Google Calendar', 'error');
+        onShowNotification?.(err?.message || 'Không thể bật thông báo', 'error');
       } finally {
         setIsConnectingCalendar(false);
       }
@@ -108,7 +108,7 @@ export function SettingsModal({
       disconnectGoogleCalendar();
       setCalendarConnected(false);
       onUpdateSettings({ calendarAutoSync: false });
-      onShowNotification?.('Đã tắt đồng bộ Google Calendar.');
+      onShowNotification?.('Đã tắt thông báo.');
     }
   };
 
@@ -654,12 +654,12 @@ export function SettingsModal({
                               ? "bg-blue-600/10 dark:bg-blue-500/20 text-blue-600 dark:text-cyan-400 border-blue-500/20"
                               : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700"
                           )}>
-                            <CalendarIcon className="w-5 h-5" />
+                            <BellRing className="w-5 h-5" />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                Đồng bộ Google Calendar
+                                Thông báo nhắc hoàn tiền
                               </h4>
                               {calendarConnected ? (
                                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800">
@@ -673,8 +673,8 @@ export function SettingsModal({
                             </div>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               {calendarConnected 
-                                ? (user.email ? `Liên kết với ${user.email}` : 'Tự động tạo lịch nhắc chi tiêu cần đòi / hoàn tiền')
-                                : 'Bật để tự động nhắc lịch các khoản chi ứng trước trên Google Calendar'}
+                                ? 'Đã cấp quyền gửi thông báo trình duyệt'
+                                : 'Bật để tự động nhắc lịch các khoản chi ứng trước qua thông báo'}
                             </p>
                           </div>
                         </div>
@@ -750,12 +750,12 @@ export function SettingsModal({
                           <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/80 to-indigo-50/60 dark:from-slate-800/80 dark:to-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                             <div>
                               <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                                Đồng bộ khoản chi đang chờ
+                                Bật thông báo cho khoản chờ
                               </h5>
                               <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                                 {expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length > 0
-                                  ? `Có ${expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length} khoản chi chờ hoàn tiền chưa lên lịch.`
-                                  : 'Tất cả các khoản chi hoàn tiền đã được đồng bộ lên Google Calendar.'}
+                                  ? `Có ${expenses.filter(e => e.isReimbursable && !e.calendarEventId && !e.isResolved).length} khoản chi chờ hoàn tiền chưa bật thông báo.`
+                                  : 'Tất cả các khoản chi hoàn tiền đã được lên lịch thông báo.'}
                               </p>
                             </div>
 
@@ -767,12 +767,12 @@ export function SettingsModal({
                                   setIsSyncingAll(true);
                                   const count = await onSyncExpensesCalendar();
                                   if (count > 0) {
-                                    onShowNotification?.(`Đã đồng bộ ${count} khoản chi lên Google Calendar! 📅`);
+                                    onShowNotification?.(`Đã bật thông báo cho ${count} khoản chi! 🔔`);
                                   } else {
-                                    onShowNotification?.('Tất cả các khoản chi hoàn tiền đã được đồng bộ từ trước.');
+                                    onShowNotification?.('Tất cả các khoản chi hoàn tiền đã được bật thông báo từ trước.');
                                   }
                                 } catch (e: any) {
-                                  onShowNotification?.(e?.message || 'Có lỗi khi đồng bộ lịch.', 'error');
+                                  onShowNotification?.(e?.message || 'Có lỗi khi cài đặt thông báo.', 'error');
                                 } finally {
                                   setIsSyncingAll(false);
                                 }
@@ -788,13 +788,13 @@ export function SettingsModal({
                         {/* 3. Concise informative guidelines */}
                         <div className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
                           <p className="font-bold text-slate-800 dark:text-slate-200">📌 Cách thức hoạt động:</p>
-                          <p>• Nhắc nhở qua thông báo vào 09:00 sáng ngày hẹn trên ứng dụng Google Calendar.</p>
-                          <p>• Khi bạn bấm [Đã nhận tiền] trong lịch sử, sự kiện Google Calendar sẽ tự động đổi thành [Đã hoàn tiền ✓].</p>
+                          <p>• Trình duyệt sẽ hiển thị thông báo nhắc nhở mỗi khi bạn mở ứng dụng vào các ngày đã hẹn.</p>
+                          <p>• Tính năng hoàn toàn hoạt động trên máy của bạn, bảo mật tuyệt đối.</p>
                         </div>
                       </motion.div>
                     ) : (
                       <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/30 border border-dashed border-slate-200 dark:border-slate-700 text-center py-6 text-xs text-slate-500 dark:text-slate-400">
-                        Tính năng đồng bộ lịch hiện đang tắt. Gạt công tắc sang Bật để tự động nhắc lịch các khoản chi cần hoàn tiền.
+                        Tính năng thông báo hiện đang tắt. Gạt công tắc sang Bật để tự động nhắc các khoản chi cần hoàn tiền.
                       </div>
                     )}
                   </motion.div>

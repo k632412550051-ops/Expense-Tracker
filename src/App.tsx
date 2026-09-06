@@ -34,6 +34,7 @@ import {
   updateCalendarReminderEvent, 
   deleteCalendarReminderEvent 
 } from './lib/googleCalendar';
+import { triggerDueReminderNotifications } from './lib/notifications';
 
 export default function App() {
   const { 
@@ -237,12 +238,21 @@ export default function App() {
     }, 3000);
   };
   
+  // ─── NOTIFICATION TRIGGER ───
+  useEffect(() => {
+    // Only fire if not loading, user is logged in, and they've enabled calendarAutoSync
+    if (!loading && user && settings.calendarAutoSync !== false && expenses.length > 0) {
+      triggerDueReminderNotifications(expenses, (amount) => formatCurrency(amount, settings.currency));
+    }
+  }, [loading, user, expenses, settings.calendarAutoSync, settings.currency]);
+  // ────────────────────────────
+
   const handleAddExpense = async (newExpense: Omit<Expense, 'id'>) => {
     try {
       const expenseId = await addExpense(newExpense);
       showNotification('Đã thêm giao dịch thành công!');
 
-      // Automatic Google Calendar sync for reimbursable expenses
+      // Automatic reminder sync for reimbursable expenses
       if (newExpense.isReimbursable && expenseId && settings.calendarAutoSync !== false) {
         try {
           const fullExpense: Expense = {
@@ -256,10 +266,10 @@ export default function App() {
               calendarEventLink: syncResult.htmlLink,
               calendarSyncedAt: new Date().toISOString()
             });
-            showNotification('Đã tạo sự kiện nhắc hoàn tiền trên Google Calendar! 📅');
+            // We just update the local DB so the notification system picks it up.
           }
         } catch (calError: any) {
-          console.warn('Google Calendar auto-sync notice:', calError);
+          console.warn('Reminder auto-sync notice:', calError);
         }
       }
     } catch (error) {
@@ -274,7 +284,7 @@ export default function App() {
         try {
           await deleteCalendarReminderEvent(targetExp.calendarEventId);
         } catch (calError) {
-          console.warn('Failed to delete calendar event:', calError);
+          console.warn('Failed to delete reminder event:', calError);
         }
       }
       await deleteExpense(id);
@@ -296,7 +306,6 @@ export default function App() {
       const nextResolved = !expense.isResolved;
       await updateExpense(expense.id, { isResolved: nextResolved });
 
-      // Synchronize update to Google Calendar event if present
       if (expense.calendarEventId) {
         try {
           await updateCalendarReminderEvent(expense.calendarEventId, {
@@ -304,12 +313,12 @@ export default function App() {
             isResolved: nextResolved
           });
         } catch (calError) {
-          console.warn('Failed to update calendar event:', calError);
+          console.warn('Failed to update reminder event:', calError);
         }
       }
 
       if (nextResolved) {
-         showNotification('Đã đánh dấu hoàn tiền thành công! (Đã cập nhật Lịch Google)');
+         showNotification('Đã đánh dấu hoàn tiền thành công!');
       } else {
          showNotification('Đã bỏ đánh dấu hoàn tiền!');
       }
@@ -327,10 +336,10 @@ export default function App() {
           calendarEventLink: syncResult.htmlLink,
           calendarSyncedAt: new Date().toISOString()
         });
-        showNotification('Đã đồng bộ lên Google Calendar thành công! 📅');
+        showNotification('Đã bật thông báo nhắc hoàn tiền! 🔔');
       }
     } catch (err: any) {
-      showNotification(err?.message || 'Không thể đồng bộ với Google Calendar', 'error');
+      showNotification(err?.message || 'Không thể bật thông báo', 'error');
     }
   };
 
@@ -351,7 +360,7 @@ export default function App() {
           successCount++;
         }
       } catch (err) {
-        console.warn(`Failed to sync expense ${exp.id} to calendar:`, err);
+        console.warn(`Failed to activate reminder for ${exp.id}:`, err);
       }
     }
     return successCount;

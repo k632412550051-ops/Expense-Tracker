@@ -607,31 +607,25 @@ export function TransactionHistory({
                                   </span>
 
                                   {exp.calendarEventId ? (
-                                    <a
-                                      href={exp.calendarEventLink || `https://calendar.google.com/calendar/u/0/r`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                                      title="Xem sự kiện nhắc nhở trên Google Calendar"
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60"
+                                      title="Đã bật thông báo trình duyệt cho khoản chi này"
                                     >
-                                      <CalendarIcon className="w-3 h-3" />
-                                      <span>Lịch Google</span>
-                                      <ExternalLink className="w-2.5 h-2.5 opacity-60" />
-                                    </a>
+                                      <BellRing className="w-3 h-3" />
+                                      <span>Đã bật thông báo</span>
+                                    </span>
                                   ) : (
-                                    <a
-                                      href={createGoogleCalendarUrl(exp)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (onSyncCalendar) onSyncCalendar(exp);
+                                      }}
                                       className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
-                                      title="Mở Google Calendar để thêm sự kiện (1-chạm, không cần cấp quyền)"
+                                      title="Bật thông báo nhắc hoàn tiền"
                                     >
-                                      <CalendarIcon className="w-2.5 h-2.5" />
-                                      <span>+ Thêm Lịch Google</span>
-                                      <ExternalLink className="w-2 h-2 opacity-60" />
-                                    </a>
+                                      <BellRing className="w-2.5 h-2.5" />
+                                      <span>+ Bật thông báo</span>
+                                    </button>
                                   )}
                                 </div>
                               )}
@@ -824,34 +818,29 @@ export function TransactionHistory({
                                     <span className={cn(
                                       "text-[10px] px-2 py-0.5 rounded-full font-bold",
                                       exp.isResolved ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300" : "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
-                                    )}>
                                       {exp.isResolved ? 'Đã hoàn tiền' : 'Chờ hoàn tiền'}
                                     </span>
 
                                     {exp.calendarEventId ? (
-                                      <a
-                                        href={exp.calendarEventLink || `https://calendar.google.com/calendar/u/0/r`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60 hover:underline"
-                                        title="Xem trên Google Calendar"
+                                      <span
+                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/80 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/60 dark:border-blue-900/60"
+                                        title="Đã bật thông báo trình duyệt"
                                       >
-                                        <CalendarIcon className="w-2.5 h-2.5" />
-                                        <span>Lịch Google</span>
-                                        <ExternalLink className="w-2 h-2 opacity-60" />
-                                      </a>
+                                        <BellRing className="w-2.5 h-2.5" />
+                                        <span>Đã bật thông báo</span>
+                                      </span>
                                     ) : (
-                                      <a
-                                        href={createGoogleCalendarUrl(exp)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-cyan-400 hover:underline font-bold cursor-pointer"
-                                        title="Mở Google Calendar để thêm sự kiện (1-chạm)"
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (onSyncCalendar) onSyncCalendar(exp);
+                                        }}
+                                        className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-50/90 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/80 dark:border-blue-800 transition-colors cursor-pointer"
+                                        title="Bật thông báo nhắc hoàn tiền"
                                       >
-                                        <CalendarIcon className="w-2.5 h-2.5" />
-                                        <span>+ Thêm Lịch</span>
-                                        <ExternalLink className="w-2 h-2 opacity-60" />
-                                      </a>
+                                        <BellRing className="w-2.5 h-2.5" />
+                                        <span>+ Bật thông báo</span>
+                                      </button>
                                     )}
 
                                     <button

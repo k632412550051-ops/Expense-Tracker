@@ -306,7 +306,7 @@ export function ExpenseForm({
               <label htmlFor="isReimbursable" className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none flex items-center gap-1.5">
                 <span>Chi ứng trước (cần đòi / hoàn lại)</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/50 dark:border-blue-900/50">
-                  Google Calendar
+                  Có thông báo
                 </span>
               </label>
             </div>
@@ -331,7 +331,7 @@ export function ExpenseForm({
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-blue-700 dark:text-cyan-300 font-medium">
                   <BellRing className="w-3.5 h-3.5 shrink-0" />
-                  <span>Tự động đồng bộ lên Google Calendar</span>
+                  <span>Sẽ nhắc nhở khi đến ngày hẹn</span>
                 </div>
               </motion.div>
             )}
