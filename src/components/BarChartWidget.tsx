@@ -71,10 +71,21 @@ export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND'
 
     expenses.forEach(exp => {
       if (exp.type === 'income') return; // only chart expenses
-      const monthKey = exp.date.slice(0, 7); // 'YYYY-MM'
-      const monthData = result.find(r => r.monthKey === monthKey);
-      if (monthData) {
-        monthData.total += getExpenseConvertedAmount(exp, baseCurrency);
+
+      if (exp.isAmortized && exp.amortizedMonths && exp.amortizedMonths.length > 0) {
+        const splitConverted = getExpenseConvertedAmount(exp, baseCurrency) / exp.amortizedMonths.length;
+        exp.amortizedMonths.forEach(mKey => {
+          const monthData = result.find(r => r.monthKey === mKey);
+          if (monthData) {
+            monthData.total += splitConverted;
+          }
+        });
+      } else {
+        const monthKey = exp.date.slice(0, 7); // 'YYYY-MM'
+        const monthData = result.find(r => r.monthKey === monthKey);
+        if (monthData) {
+          monthData.total += getExpenseConvertedAmount(exp, baseCurrency);
+        }
       }
     });
 

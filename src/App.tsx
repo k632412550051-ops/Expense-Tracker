@@ -27,7 +27,8 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  Plane
+  Plane,
+  ArrowRight
 } from 'lucide-react';
 import { formatCurrency, setGlobalCurrency, setGlobalPrivacyMode } from './lib/utils';
 import { 
@@ -394,15 +395,44 @@ export default function App() {
     return expenses.filter(exp => exp.date.startsWith(currentMonth));
   }, [expenses, currentMonth]);
 
-  const currentMonthExpensesList = useMemo(() => {
-    return currentMonthTransactions.filter(exp => 
-      (exp.type === 'expense' || !exp.type) && !exp.isResolved
-    );
-  }, [currentMonthTransactions]);
-
   const currentMonthIncomeList = useMemo(() => {
     return currentMonthTransactions.filter(exp => exp.type === 'income');
   }, [currentMonthTransactions]);
+
+  // Statistical expenses allocated to a given month (incorporates amortized lump-sum splits)
+  const getStatisticalExpensesForMonth = (allExpenses: Expense[], targetMonth: string): Expense[] => {
+    const list: Expense[] = [];
+
+    allExpenses.forEach(exp => {
+      if (exp.type === 'income' || exp.isResolved) return;
+
+      if (exp.isAmortized && exp.amortizedMonths && exp.amortizedMonths.length > 0) {
+        if (exp.amortizedMonths.includes(targetMonth)) {
+          const count = exp.amortizedMonths.length;
+          const splitAmount = exp.amount / count;
+          const splitConvertedAmount = exp.convertedAmount !== undefined 
+            ? exp.convertedAmount / count 
+            : undefined;
+
+          list.push({
+            ...exp,
+            amount: splitAmount,
+            convertedAmount: splitConvertedAmount,
+          });
+        }
+      } else {
+        if (exp.date.startsWith(targetMonth)) {
+          list.push(exp);
+        }
+      }
+    });
+
+    return list;
+  };
+
+  const currentMonthExpensesList = useMemo(() => {
+    return getStatisticalExpensesForMonth(expenses, currentMonth);
+  }, [expenses, currentMonth]);
 
   const previousMonth = useMemo(() => {
     const [yearStr, monthStr] = currentMonth.split('-');
@@ -415,15 +445,9 @@ export default function App() {
     return `${year}-${month.toString().padStart(2, '0')}`;
   }, [currentMonth]);
 
-  const previousMonthTransactions = useMemo(() => {
-    return expenses.filter(exp => exp.date.startsWith(previousMonth));
-  }, [expenses, previousMonth]);
-
   const previousMonthExpensesList = useMemo(() => {
-    return previousMonthTransactions.filter(exp => 
-      (exp.type === 'expense' || !exp.type) && !exp.isResolved
-    );
-  }, [previousMonthTransactions]);
+    return getStatisticalExpensesForMonth(expenses, previousMonth);
+  }, [expenses, previousMonth]);
 
   const totalSpent = useMemo(() => {
     return currentMonthExpensesList.reduce((sum, exp) => sum + getExpenseConvertedAmount(exp, settings.currency), 0);
@@ -439,7 +463,35 @@ export default function App() {
     return currentMonthIncomeList.reduce((sum, exp) => sum + getExpenseConvertedAmount(exp, settings.currency), 0);
   }, [currentMonthIncomeList, settings.currency]);
 
-  const balance = totalIncome - totalSpent;
+  // Carried-over remaining balance from all transactions strictly before the current month
+  const carriedOverBalance = useMemo(() => {
+    let priorIncome = 0;
+    let priorSpent = 0;
+
+    expenses.forEach(exp => {
+      const expMonth = exp.date.slice(0, 7);
+      if (expMonth < currentMonth) {
+        const converted = getExpenseConvertedAmount(exp, settings.currency);
+        if (exp.type === 'income') {
+          priorIncome += converted;
+        } else if (!exp.isResolved) {
+          priorSpent += converted;
+        }
+      }
+    });
+
+    return priorIncome - priorSpent;
+  }, [expenses, currentMonth, settings.currency]);
+
+  // Actual cash spent in current month
+  const currentMonthActualSpent = useMemo(() => {
+    return currentMonthTransactions
+      .filter(exp => (exp.type === 'expense' || !exp.type) && !exp.isResolved)
+      .reduce((sum, exp) => sum + getExpenseConvertedAmount(exp, settings.currency), 0);
+  }, [currentMonthTransactions, settings.currency]);
+
+  // Cumulative running balance up to current month (carried over from previous months)
+  const balance = carriedOverBalance + totalIncome - currentMonthActualSpent;
   
   const totalBudget = useMemo(() => {
     // Only sum budgets for currently active categories
@@ -708,9 +760,14 @@ export default function App() {
                <p className={`text-lg sm:text-2xl md:text-3xl font-black font-heading tracking-tight ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                  {formatCurrency(balance, settings.currency, settings.privacyMode)}
                </p>
-               <p className="text-[10px] sm:text-[11px] font-semibold mt-0.5 truncate text-slate-400">
-                 {balance >= 0 ? t('dashboard.surplus') : t('dashboard.deficit')}
-               </p>
+               <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-[11px] font-semibold mt-0.5 truncate text-slate-400">
+                 <span>{balance >= 0 ? t('dashboard.surplus') : t('dashboard.deficit')}</span>
+                 {carriedOverBalance !== 0 && (
+                   <span className="text-slate-500 dark:text-slate-400 font-medium">
+                     {carriedOverBalance > 0 ? '+' : ''}{formatCurrency(carriedOverBalance, settings.currency, settings.privacyMode)} {t('dashboard.fromPrevMonth', { defaultValue: 'từ tháng trước' })}
+                   </span>
+                 )}
+               </div>
              </div>
           </div>
 

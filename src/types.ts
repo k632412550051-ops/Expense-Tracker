@@ -85,6 +85,9 @@ export interface Expense {
   calendarEventLink?: string;
   calendarSyncedAt?: string;
   reimbursementReminderDate?: string; // Target date (YYYY-MM-DD) to receive reimbursement
+  // Lump-sum / Amortized payment (Thanh toán gộp)
+  isAmortized?: boolean;
+  amortizedMonths?: string[]; // List of YYYY-MM months to distribute the expense across
 }
 
 export type BudgetMap = Record<Category, number>;

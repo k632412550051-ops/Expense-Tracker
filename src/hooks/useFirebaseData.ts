@@ -141,6 +141,8 @@ export function useFirebaseData() {
             calendarEventLink: data.calendarEventLink,
             calendarSyncedAt: data.calendarSyncedAt,
             reimbursementReminderDate: data.reimbursementReminderDate,
+            isAmortized: data.isAmortized || false,
+            amortizedMonths: data.amortizedMonths || undefined,
           });
         });
 

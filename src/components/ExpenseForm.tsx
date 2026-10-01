@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
-import { PlusCircle, Check, Calendar as CalendarIcon, BellRing, Zap } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { PlusCircle, Check, Calendar as CalendarIcon, BellRing, Zap, Layers } from 'lucide-react';
+import { cn, formatCurrency } from '../lib/utils';
 import { calculateReminderDate } from '../lib/googleCalendar';
 import { PERSONA_CONFIGS } from '../lib/persona';
 import { useCategoryTranslation } from '../lib/useCategoryTranslation';
+import { AmortizeSettingsModal } from './AmortizeSettingsModal';
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
@@ -41,6 +42,9 @@ export function ExpenseForm({
   const [date, setDate] = useState<string>(getLocalDateString());
   const [isReimbursable, setIsReimbursable] = useState<boolean>(false);
   const [reminderDate, setReminderDate] = useState<string>(() => calculateReminderDate(getLocalDateString(), 3));
+  const [isAmortized, setIsAmortized] = useState<boolean>(false);
+  const [amortizedMonths, setAmortizedMonths] = useState<string[]>([]);
+  const [isAmortizedModalOpen, setIsAmortizedModalOpen] = useState<boolean>(false);
   const [note, setNote] = useState<string>('');
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
 
@@ -77,6 +81,18 @@ export function ExpenseForm({
     }
   }, [currentCategories, category]);
 
+  const handleToggleAmortized = (checked: boolean) => {
+    setIsAmortized(checked);
+    if (checked) {
+      setIsAmortizedModalOpen(true);
+    }
+  };
+
+  const handleConfirmAmortizedMonths = (months: string[]) => {
+    setAmortizedMonths(months);
+    setIsAmortized(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(Number(amount))) return;
@@ -95,11 +111,15 @@ export function ExpenseForm({
         type,
         isReimbursable: type === 'expense' ? isReimbursable : false,
         reimbursementReminderDate: (type === 'expense' && isReimbursable) ? reminderDate : undefined,
+        isAmortized: type === 'expense' && isAmortized && amortizedMonths.length > 0 ? true : false,
+        amortizedMonths: type === 'expense' && isAmortized && amortizedMonths.length > 0 ? amortizedMonths : undefined,
       });
 
       setAmount('');
       setNote('');
       setIsReimbursable(false);
+      setIsAmortized(false);
+      setAmortizedMonths([]);
       setReminderDate(calculateReminderDate(date, 3));
     } catch (error) {
       console.error(error);
@@ -352,6 +372,59 @@ export function ExpenseForm({
                 </div>
               </motion.div>
             )}
+
+            {/* Thanh toán gộp (Lump-sum / Amortized Payment) Checkbox */}
+            <div className="flex items-center gap-2.5 mt-1">
+              <input
+                type="checkbox"
+                id="isAmortized"
+                name="isAmortized"
+                checked={isAmortized}
+                onChange={(e) => handleToggleAmortized(e.target.checked)}
+                className="w-4 h-4 text-purple-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-purple-500 cursor-pointer"
+              />
+              <label htmlFor="isAmortized" className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none flex items-center gap-1.5">
+                <span>Thanh toán gộp</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-bold border border-purple-200/50 dark:border-purple-900/50">
+                  Chia đều các tháng
+                </span>
+              </label>
+            </div>
+
+            {/* Amortized Information & Customization Trigger */}
+            {isAmortized && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/40 border border-purple-200/70 dark:border-purple-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
+              >
+                <div className="flex items-center gap-2 text-purple-950 dark:text-purple-200 flex-1 min-w-0">
+                  <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+                  <span className="truncate">
+                    {amortizedMonths.length > 0 ? (
+                      <>
+                        Đã chia đều cho <strong>{amortizedMonths.length} tháng</strong> ({amortizedMonths.map(m => `T${m.split('-')[1]}/${m.split('-')[0]}`).join(', ')})
+                        {amount && Number(amount) > 0 && (
+                          <span className="font-bold text-purple-700 dark:text-purple-300 ml-1">
+                            • ≈ {formatCurrency(Number(amount) / amortizedMonths.length, baseCurrency)}/tháng
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span>Chưa chọn tháng phân bổ. Bấm để tuỳ chỉnh.</span>
+                    )}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  id="amortize-customize-btn"
+                  onClick={() => setIsAmortizedModalOpen(true)}
+                  className="px-2.5 py-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors cursor-pointer shrink-0 shadow-xs"
+                >
+                  Tuỳ chỉnh
+                </button>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -366,6 +439,23 @@ export function ExpenseForm({
         <PlusCircle className="w-4 h-4" />
         <span>{t('form.saveTransaction')}</span>
       </motion.button>
+
+      {/* Amortization Configuration Modal */}
+      <AmortizeSettingsModal
+        isOpen={isAmortizedModalOpen}
+        onClose={() => {
+          setIsAmortizedModalOpen(false);
+          // If closed without any months selected, uncheck
+          if (amortizedMonths.length === 0) {
+            setIsAmortized(false);
+          }
+        }}
+        amount={Number(amount) || 0}
+        baseCurrency={baseCurrency}
+        transactionDate={date}
+        initialMonths={amortizedMonths}
+        onConfirm={handleConfirmAmortizedMonths}
+      />
     </motion.form>
   );
 }
