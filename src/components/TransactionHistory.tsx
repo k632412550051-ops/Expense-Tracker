@@ -656,14 +656,12 @@ export function TransactionHistory({
                               )}
 
                               {exp.isAmortized && exp.amortizedMonths && exp.amortizedMonths.length > 0 && (
-                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                  <span 
-                                    className="text-[10px] px-2.5 py-0.5 rounded-full font-bold shrink-0 border bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
-                                    title={`Chia đều ${exp.amortizedMonths.length} tháng: ${exp.amortizedMonths.map(m => 'T' + m.split('-')[1] + '/' + m.split('-')[0]).join(', ')}`}
-                                  >
-                                    Thanh toán gộp ({exp.amortizedMonths.length} tháng)
-                                  </span>
-                                </div>
+                                <span 
+                                  className="text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 border bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 border-blue-200/60 dark:border-blue-800/60 mt-1 inline-block"
+                                  title={`Chia đều ${exp.amortizedMonths.length} tháng: ${exp.amortizedMonths.map(m => 'T' + m.split('-')[1]).join(', ')}`}
+                                >
+                                  Gộp {exp.amortizedMonths.length} tháng
+                                </span>
                               )}
                             </div>
                           </div>
@@ -857,14 +855,12 @@ export function TransactionHistory({
                                   )}
 
                                   {exp.isAmortized && exp.amortizedMonths && exp.amortizedMonths.length > 0 && (
-                                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                      <span 
-                                        className="text-[10px] px-2.5 py-0.5 rounded-full font-bold border bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
-                                        title={`Chia đều ${exp.amortizedMonths.length} tháng: ${exp.amortizedMonths.map(m => 'T' + m.split('-')[1] + '/' + m.split('-')[0]).join(', ')}`}
-                                      >
-                                        Thanh toán gộp ({exp.amortizedMonths.length} tháng)
-                                      </span>
-                                    </div>
+                                    <span 
+                                      className="text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 border bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 border-blue-200/60 dark:border-blue-800/60 mt-1 inline-block"
+                                      title={`Chia đều ${exp.amortizedMonths.length} tháng: ${exp.amortizedMonths.map(m => 'T' + m.split('-')[1]).join(', ')}`}
+                                    >
+                                      Gộp {exp.amortizedMonths.length} tháng
+                                    </span>
                                   )}
                                 </div>
                               </div>

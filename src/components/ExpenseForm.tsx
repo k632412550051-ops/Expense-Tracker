@@ -324,105 +324,72 @@ export function ExpenseForm({
       <AnimatePresence initial={false}>
         {type === 'expense' && (
           <motion.div
-            key="reimbursable-checkbox-container"
-            initial={{ opacity: 0, height: 0, y: -6 }}
-            animate={{ opacity: 1, height: 'auto', y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-col gap-2 mt-0.5 px-1 overflow-hidden"
+            key="expense-options-container"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex flex-col gap-2 pt-1 border-t border-slate-200/50 dark:border-slate-800/60 overflow-hidden"
           >
-            <div className="flex items-center gap-2.5">
-              <input
-                type="checkbox"
-                id="isReimbursable"
-                name="isReimbursable"
-                checked={isReimbursable}
-                onChange={(e) => setIsReimbursable(e.target.checked)}
-                className="w-4 h-4 text-blue-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
-              />
-              <label htmlFor="isReimbursable" className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {/* Checkbox: Chi ứng trước */}
+              <label htmlFor="isReimbursable" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="isReimbursable"
+                  name="isReimbursable"
+                  checked={isReimbursable}
+                  onChange={(e) => setIsReimbursable(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
+                />
                 <span>{t('form.reimbursable')}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 font-bold border border-blue-200/50 dark:border-blue-900/50">
-                  {t('form.hasNotification')}
-                </span>
               </label>
+
+              {/* Checkbox: Thanh toán gộp */}
+              <div className="inline-flex items-center gap-2 flex-wrap">
+                <label htmlFor="isAmortized" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="isAmortized"
+                    name="isAmortized"
+                    checked={isAmortized}
+                    onChange={(e) => handleToggleAmortized(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span>Thanh toán gộp</span>
+                </label>
+
+                {isAmortized && amortizedMonths.length > 0 && (
+                  <button
+                    type="button"
+                    id="amortize-customize-btn"
+                    onClick={() => setIsAmortizedModalOpen(true)}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-blue-800/60 text-[11px] font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
+                  >
+                    <span>Chia {amortizedMonths.length} tháng ({formatCurrency((Number(amount) || 0) / amortizedMonths.length, baseCurrency)}/th)</span>
+                    <span className="text-[10px] underline ml-0.5">Sửa</span>
+                  </button>
+                )}
+              </div>
             </div>
 
+            {/* Compact Reimbursable Reminder Date Picker if active */}
             {isReimbursable && (
               <motion.div 
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-2xl bg-blue-50/50 dark:bg-slate-900/50 border border-blue-200/60 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300 py-1"
               >
-                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                  <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
-                  <span className="font-medium">{t('form.reminderDate')}:</span>
-                  <input
-                    id="expense-reminder-date"
-                    name="expense-reminder-date"
-                    type="date"
-                    value={reminderDate}
-                    onChange={(e) => setReminderDate(e.target.value)}
-                    className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                  />
-                </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-blue-700 dark:text-cyan-300 font-medium">
-                  <BellRing className="w-3.5 h-3.5 shrink-0" />
-                  <span>{t('form.willNotify')}</span>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Thanh toán gộp (Lump-sum / Amortized Payment) Checkbox */}
-            <div className="flex items-center gap-2.5 mt-1">
-              <input
-                type="checkbox"
-                id="isAmortized"
-                name="isAmortized"
-                checked={isAmortized}
-                onChange={(e) => handleToggleAmortized(e.target.checked)}
-                className="w-4 h-4 text-purple-600 rounded-md border-slate-300 dark:border-slate-600 focus:ring-purple-500 cursor-pointer"
-              />
-              <label htmlFor="isAmortized" className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none flex items-center gap-1.5">
-                <span>Thanh toán gộp</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-bold border border-purple-200/50 dark:border-purple-900/50">
-                  Chia đều các tháng
-                </span>
-              </label>
-            </div>
-
-            {/* Amortized Information & Customization Trigger */}
-            {isAmortized && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/40 border border-purple-200/70 dark:border-purple-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
-              >
-                <div className="flex items-center gap-2 text-purple-950 dark:text-purple-200 flex-1 min-w-0">
-                  <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
-                  <span className="truncate">
-                    {amortizedMonths.length > 0 ? (
-                      <>
-                        Đã chia đều cho <strong>{amortizedMonths.length} tháng</strong> ({amortizedMonths.map(m => `T${m.split('-')[1]}/${m.split('-')[0]}`).join(', ')})
-                        {amount && Number(amount) > 0 && (
-                          <span className="font-bold text-purple-700 dark:text-purple-300 ml-1">
-                            • ≈ {formatCurrency(Number(amount) / amortizedMonths.length, baseCurrency)}/tháng
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span>Chưa chọn tháng phân bổ. Bấm để tuỳ chỉnh.</span>
-                    )}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  id="amortize-customize-btn"
-                  onClick={() => setIsAmortizedModalOpen(true)}
-                  className="px-2.5 py-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors cursor-pointer shrink-0 shadow-xs"
-                >
-                  Tuỳ chỉnh
-                </button>
+                <CalendarIcon className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
+                <span>{t('form.reminderDate')}:</span>
+                <input
+                  id="expense-reminder-date"
+                  name="expense-reminder-date"
+                  type="date"
+                  value={reminderDate}
+                  onChange={(e) => setReminderDate(e.target.value)}
+                  className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </motion.div>
             )}
           </motion.div>
