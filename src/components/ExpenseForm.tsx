@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
 import { PlusCircle, Check, Calendar as CalendarIcon, BellRing, Zap, Layers } from 'lucide-react';
-import { cn, formatCurrency } from '../lib/utils';
+import { cn, formatCurrency, formatNumberWithSeparators, parseFormattedNumber, shiftMonth, formatMonthRange } from '../lib/utils';
 import { calculateReminderDate } from '../lib/googleCalendar';
 import { PERSONA_CONFIGS } from '../lib/persona';
 import { useCategoryTranslation } from '../lib/useCategoryTranslation';
@@ -81,12 +81,46 @@ export function ExpenseForm({
     }
   }, [currentCategories, category]);
 
+  const currentTransactionMonth = useMemo(() => {
+    return date ? date.slice(0, 7) : getLocalDateString().slice(0, 7);
+  }, [date]);
+
   const handleToggleAmortized = (checked: boolean) => {
     setIsAmortized(checked);
     if (checked) {
-      setIsAmortizedModalOpen(true);
+      if (amortizedMonths.length === 0) {
+        setAmortizedMonths([
+          currentTransactionMonth,
+          shiftMonth(currentTransactionMonth, 1),
+          shiftMonth(currentTransactionMonth, 2),
+        ]);
+      }
     }
   };
+
+  const handleApplyPreset = (monthCount: 3 | 6 | 12) => {
+    const arr: string[] = [];
+    for (let i = 0; i < monthCount; i++) {
+      arr.push(shiftMonth(currentTransactionMonth, i));
+    }
+    setAmortizedMonths(arr);
+  };
+
+  const activePreset = useMemo(() => {
+    if (!isAmortized || amortizedMonths.length === 0) return null;
+    const sorted = [...amortizedMonths].sort();
+    if (sorted[0] !== currentTransactionMonth) return null;
+    if (sorted.length === 3 && sorted.every((m, i) => m === shiftMonth(currentTransactionMonth, i))) return 3;
+    if (sorted.length === 6 && sorted.every((m, i) => m === shiftMonth(currentTransactionMonth, i))) return 6;
+    if (sorted.length === 12 && sorted.every((m, i) => m === shiftMonth(currentTransactionMonth, i))) return 12;
+    return null;
+  }, [isAmortized, amortizedMonths, currentTransactionMonth]);
+
+  const numAmount = parseFormattedNumber(amount) || 0;
+  const amortizedPerMonth = useMemo(() => {
+    if (!isAmortized || amortizedMonths.length === 0) return 0;
+    return numAmount / amortizedMonths.length;
+  }, [isAmortized, amortizedMonths, numAmount]);
 
   const handleConfirmAmortizedMonths = (months: string[]) => {
     setAmortizedMonths(months);
@@ -95,8 +129,7 @@ export function ExpenseForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || isNaN(Number(amount))) return;
-    const numAmount = Number(amount);
+    const numAmount = parseFormattedNumber(amount);
     if (numAmount <= 0) return;
     if (!category) return;
     
@@ -205,12 +238,11 @@ export function ExpenseForm({
             <input
               id="expense-amount"
               name="expense-amount"
-              type="number"
+              type="text"
+              inputMode="numeric"
               required
-              min="0"
-              step={baseCurrency === 'VND' || baseCurrency === 'JPY' || baseCurrency === 'KRW' ? "1" : "0.01"}
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => setAmount(formatNumberWithSeparators(e.target.value, baseCurrency))}
               className="w-full px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all shadow-inner shadow-blue-900/5 text-sm font-semibold pr-10"
               placeholder={`0 ${currencySymbol}`}
             />
@@ -346,32 +378,102 @@ export function ExpenseForm({
               </label>
 
               {/* Checkbox: Thanh toán gộp */}
-              <div className="inline-flex items-center gap-2 flex-wrap">
-                <label htmlFor="isAmortized" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    id="isAmortized"
-                    name="isAmortized"
-                    checked={isAmortized}
-                    onChange={(e) => handleToggleAmortized(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span>Thanh toán gộp</span>
-                </label>
+              <label htmlFor="isAmortized" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="isAmortized"
+                  name="isAmortized"
+                  checked={isAmortized}
+                  onChange={(e) => handleToggleAmortized(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span>Thanh toán gộp</span>
+              </label>
+            </div>
 
-                {isAmortized && amortizedMonths.length > 0 && (
+            {/* Inline Clean "Thanh toán gộp" Configuration Tray */}
+            {isAmortized && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.16 }}
+                className="p-3 rounded-2xl bg-blue-50/60 dark:bg-slate-900/60 border border-blue-200/50 dark:border-white/10 flex flex-col gap-2.5 overflow-hidden"
+              >
+                {/* Row 1: Quick options buttons */}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                      Chọn nhanh:
+                    </span>
+                    <button
+                      type="button"
+                      id="amortize-preset-3m"
+                      onClick={() => handleApplyPreset(3)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border shadow-2xs",
+                        activePreset === 3
+                          ? "bg-blue-600 text-white border-blue-500 shadow-xs ring-1 ring-blue-500/30"
+                          : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400"
+                      )}
+                    >
+                      3 tháng tới
+                    </button>
+                    <button
+                      type="button"
+                      id="amortize-preset-6m"
+                      onClick={() => handleApplyPreset(6)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border shadow-2xs",
+                        activePreset === 6
+                          ? "bg-blue-600 text-white border-blue-500 shadow-xs ring-1 ring-blue-500/30"
+                          : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400"
+                      )}
+                    >
+                      6 tháng tới
+                    </button>
+                    <button
+                      type="button"
+                      id="amortize-preset-1y"
+                      onClick={() => handleApplyPreset(12)}
+                      className={cn(
+                        "px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer border shadow-2xs",
+                        activePreset === 12
+                          ? "bg-blue-600 text-white border-blue-500 shadow-xs ring-1 ring-blue-500/30"
+                          : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400"
+                      )}
+                    >
+                      1 năm tới
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    id="amortize-customize-btn"
+                    id="amortize-custom-modal-btn"
                     onClick={() => setIsAmortizedModalOpen(true)}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400 border border-blue-200/60 dark:border-blue-800/60 text-[11px] font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
+                    className="text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer flex items-center gap-1 ml-auto"
                   >
-                    <span>Chia {amortizedMonths.length} tháng ({formatCurrency((Number(amount) || 0) / amortizedMonths.length, baseCurrency)}/th)</span>
-                    <span className="text-[10px] underline ml-0.5">Sửa</span>
+                    <span>Tùy chỉnh tháng</span>
                   </button>
-                )}
-              </div>
-            </div>
+                </div>
+
+                {/* Row 2: Live calculation summary */}
+                <div className="flex items-center justify-between text-xs bg-white/70 dark:bg-slate-800/70 px-3 py-2 rounded-xl border border-blue-100/60 dark:border-slate-700/60">
+                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 min-w-0">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">Phân bổ:</span>
+                    <span className="font-bold text-slate-900 dark:text-white truncate">
+                      {amortizedMonths.length} tháng ({formatMonthRange(amortizedMonths)})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="font-extrabold text-blue-700 dark:text-cyan-400">
+                      {formatCurrency(amortizedPerMonth, baseCurrency)}
+                    </span>
+                    <span className="text-[10px] text-slate-400">/tháng</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* Compact Reimbursable Reminder Date Picker if active */}
             {isReimbursable && (
@@ -417,7 +519,7 @@ export function ExpenseForm({
             setIsAmortized(false);
           }
         }}
-        amount={Number(amount) || 0}
+        amount={parseFormattedNumber(amount) || 0}
         baseCurrency={baseCurrency}
         transactionDate={date}
         initialMonths={amortizedMonths}

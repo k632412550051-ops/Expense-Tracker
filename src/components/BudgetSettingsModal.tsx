@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BudgetMap, Category, PRESET_CATEGORY_COLORS, getCategoryColor, CurrencyCode } from '../types';
 import { useCategoryTranslation } from '../lib/useCategoryTranslation';
+import { formatNumberWithSeparators, parseFormattedNumber } from '../lib/utils';
 import { X, Save, Plus, Trash2, Edit2 } from 'lucide-react';
 
 interface BudgetSettingsModalProps {
@@ -46,10 +47,26 @@ export function BudgetSettingsModal({
   const [renames, setRenames] = useState<{old: string, new: string}[]>([]);
   const [incomeRenames, setIncomeRenames] = useState<{old: string, new: string}[]>([]);
 
-  const handleChange = (category: Category, value: string) => {
+  // Formatted string state for each category budget to support thousand separators (e.g. 2.000.000)
+  const [budgetInputs, setBudgetInputs] = useState<Record<Category, string>>(() => {
+    const init: Record<Category, string> = {};
+    Object.keys(budgets).forEach(cat => {
+      const val = budgets[cat];
+      init[cat] = val ? formatNumberWithSeparators(val, baseCurrency) : '';
+    });
+    return init;
+  });
+
+  const handleBudgetChange = (category: Category, rawValue: string) => {
+    const formatted = formatNumberWithSeparators(rawValue, baseCurrency);
+    const parsedNum = parseFormattedNumber(formatted);
+    setBudgetInputs(prev => ({
+      ...prev,
+      [category]: formatted,
+    }));
     setLocalBudgets(prev => ({
       ...prev,
-      [category]: Number(value) || 0
+      [category]: parsedNum,
     }));
   };
 
@@ -69,6 +86,7 @@ export function BudgetSettingsModal({
       if (localCategories.includes(trimmed)) return;
       setLocalCategories(prev => [...prev, trimmed]);
       setLocalBudgets(prev => ({ ...prev, [trimmed]: 0 }));
+      setBudgetInputs(prev => ({ ...prev, [trimmed]: '' }));
       if (!localColors[trimmed]) {
         setLocalColors(prev => ({
           ...prev,
@@ -123,6 +141,12 @@ export function BudgetSettingsModal({
       setLocalBudgets(prev => {
         const next = { ...prev };
         next[trimmed] = next[editingCategory] !== undefined ? next[editingCategory] : 0;
+        delete next[editingCategory];
+        return next;
+      });
+      setBudgetInputs(prev => {
+        const next = { ...prev };
+        next[trimmed] = next[editingCategory] || '';
         delete next[editingCategory];
         return next;
       });
@@ -342,11 +366,10 @@ export function BudgetSettingsModal({
                     <input
                       id={`budget-${category}`}
                       name={`budget-${category}`}
-                      type="number"
-                      min="0"
-                      step="10000"
-                      value={localBudgets[category] || ''}
-                      onChange={(e) => handleChange(category, e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      value={budgetInputs[category] ?? (localBudgets[category] ? formatNumberWithSeparators(localBudgets[category], baseCurrency) : '')}
+                      onChange={(e) => handleBudgetChange(category, e.target.value)}
                       className="w-full pl-4 pr-16 py-2 bg-white/70 dark:bg-slate-900/60 border border-white/90 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 text-xs sm:text-sm font-semibold shadow-inner shadow-blue-900/5 text-slate-800 dark:text-white"
                       placeholder="0"
                     />
