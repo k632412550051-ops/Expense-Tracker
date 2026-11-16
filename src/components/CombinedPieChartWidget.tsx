@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
-import { Expense, getCategoryColor, CurrencyCode } from '../types';
+import { Expense, Category, DEFAULT_CATEGORIES, getCategoryColor, CurrencyCode } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { getExpenseConvertedAmount } from '../lib/exchangeRates';
 import { useCategoryTranslation } from '../lib/useCategoryTranslation';
@@ -12,6 +12,7 @@ interface CombinedPieChartWidgetProps {
   previousMonthExpenses: Expense[];
   currentMonthLabel: string;
   previousMonthLabel: string;
+  categories?: Category[];
   categoryColors?: Record<string, string>;
   baseCurrency?: CurrencyCode;
 }
@@ -21,6 +22,7 @@ export function CombinedPieChartWidget({
   previousMonthExpenses,
   currentMonthLabel,
   previousMonthLabel,
+  categories = DEFAULT_CATEGORIES,
   categoryColors,
   baseCurrency = 'VND',
 }: CombinedPieChartWidgetProps) {
@@ -49,6 +51,9 @@ export function CombinedPieChartWidget({
       total += converted;
     });
 
+    const orderMap = new Map<string, number>();
+    categories.forEach((cat, idx) => orderMap.set(cat, idx));
+
     const chartData = Object.keys(sums)
       .map((category) => ({
         name: translateCategory(category),
@@ -58,10 +63,18 @@ export function CombinedPieChartWidget({
       }))
       .filter((item) => item.value > 0);
 
-    chartData.sort((a, b) => b.value - a.value);
+    // Keep consistent clockwise category order across months
+    chartData.sort((a, b) => {
+      const idxA = orderMap.get(a.rawCategory);
+      const idxB = orderMap.get(b.rawCategory);
+      if (idxA !== undefined && idxB !== undefined) return idxA - idxB;
+      if (idxA !== undefined) return -1;
+      if (idxB !== undefined) return 1;
+      return a.rawCategory.localeCompare(b.rawCategory);
+    });
 
     return { data: chartData, totalAmount: total };
-  }, [activeExpenses, categoryColors, baseCurrency, translateCategory]);
+  }, [activeExpenses, categories, categoryColors, baseCurrency, translateCategory]);
 
   const renderPieLabel = (props: any) => {
     const { cx, cy, midAngle, outerRadius, percent, name, fill } = props;
@@ -225,6 +238,8 @@ export function CombinedPieChartWidget({
                   data={data}
                   cx="50%"
                   cy="50%"
+                  startAngle={90}
+                  endAngle={-270}
                   innerRadius={0}
                   outerRadius="72%"
                   paddingAngle={0}
@@ -234,8 +249,8 @@ export function CombinedPieChartWidget({
                   className="stroke-white dark:stroke-slate-900"
                   strokeWidth={2}
                 >
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {data.map((entry) => (
+                    <Cell key={entry.rawCategory} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip content={renderTooltip} />

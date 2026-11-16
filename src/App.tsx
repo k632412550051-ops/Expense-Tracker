@@ -869,6 +869,7 @@ export default function App() {
               previousMonthExpenses={previousMonthExpensesList}
               currentMonthLabel={currentMonth.split('-')[1]}
               previousMonthLabel={previousMonth.split('-')[1]}
+              categories={categories}
               categoryColors={categoryColors}
               baseCurrency={settings.currency}
             />
