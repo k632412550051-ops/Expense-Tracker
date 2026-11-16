@@ -158,7 +158,12 @@
     "spentAmount": "已支出",
     "monthTab": "{{month}}月",
     "prevMonthTab": "上月（{{month}}月）",
-    "noExpenseInMonth": "{{month}}月暂无支出数据。"
+    "noExpenseInMonth": "{{month}}月暂无支出数据。",
+    "mtdTitle": "各分类同期支出对比",
+    "mtdCurrentPeriod": "本期 ({{range}})",
+    "mtdPreviousPeriod": "上期 ({{range}})",
+    "mtdDifference": "差额",
+    "mtdNoData": "{{currentRange}} 或 {{previousRange}} 期间暂无支出数据。"
   },
   "budget": {
     "modalTitle": "分类与预算设置",

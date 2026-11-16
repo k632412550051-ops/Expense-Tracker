@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Category, Expense, CurrencyCode, CURRENCY_OPTIONS, PersonaType } from '../types';
 import { PlusCircle, Check, Calendar as CalendarIcon, BellRing, Zap, Layers } from 'lucide-react';
-import { cn, formatCurrency, formatNumberWithSeparators, parseFormattedNumber, shiftMonth, formatMonthRange } from '../lib/utils';
+import { cn, formatCurrency, parseFormattedNumber, shiftMonth, formatMonthRange } from '../lib/utils';
 import { calculateReminderDate } from '../lib/googleCalendar';
 import { PERSONA_CONFIGS } from '../lib/persona';
 import { useCategoryTranslation } from '../lib/useCategoryTranslation';
 import { AmortizeSettingsModal } from './AmortizeSettingsModal';
+import { FormattedNumberInput } from './FormattedNumberInput';
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
@@ -235,14 +236,13 @@ export function ExpenseForm({
           </div>
 
           <div className="relative">
-            <input
+            <FormattedNumberInput
               id="expense-amount"
               name="expense-amount"
-              type="text"
-              inputMode="numeric"
               required
+              currency={baseCurrency}
               value={amount}
-              onChange={(e) => setAmount(formatNumberWithSeparators(e.target.value, baseCurrency))}
+              onValueChange={(_num, formatted) => setAmount(formatted)}
               className="w-full px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-slate-900/70 border border-white/80 dark:border-white/15 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-all shadow-inner shadow-blue-900/5 text-sm font-semibold pr-10"
               placeholder={`0 ${currencySymbol}`}
             />

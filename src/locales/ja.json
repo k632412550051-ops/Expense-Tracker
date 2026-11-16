@@ -158,7 +158,12 @@
     "spentAmount": "支出額",
     "monthTab": "{{month}}月",
     "prevMonthTab": "先月（{{month}}月）",
-    "noExpenseInMonth": "{{month}}月の支出データはありません。"
+    "noExpenseInMonth": "{{month}}月の支出データはありません。",
+    "mtdTitle": "カテゴリ別・同期間支出比較",
+    "mtdCurrentPeriod": "今期 ({{range}})",
+    "mtdPreviousPeriod": "前期 ({{range}})",
+    "mtdDifference": "差額",
+    "mtdNoData": "{{currentRange}} および {{previousRange}} の支出データはありません。"
   },
   "budget": {
     "modalTitle": "カテゴリ設定",

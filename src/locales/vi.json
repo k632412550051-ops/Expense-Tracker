@@ -158,7 +158,12 @@
     "spentAmount": "Đã chi",
     "monthTab": "Tháng {{month}}",
     "prevMonthTab": "Tháng trước ({{month}})",
-    "noExpenseInMonth": "Không có khoản chi nào trong Tháng {{month}}."
+    "noExpenseInMonth": "Không có khoản chi nào trong Tháng {{month}}.",
+    "mtdTitle": "So sánh chi tiêu cùng kỳ theo danh mục",
+    "mtdCurrentPeriod": "Kỳ này ({{range}})",
+    "mtdPreviousPeriod": "Kỳ trước ({{range}})",
+    "mtdDifference": "Chênh lệch",
+    "mtdNoData": "Chưa có khoản chi nào trong khoảng {{currentRange}} hoặc {{previousRange}}."
   },
   "budget": {
     "modalTitle": "Thiết lập danh mục",

@@ -158,7 +158,12 @@
     "spentAmount": "Spent",
     "monthTab": "Month {{month}}",
     "prevMonthTab": "Last Month ({{month}})",
-    "noExpenseInMonth": "No expenses found for Month {{month}}."
+    "noExpenseInMonth": "No expenses found for Month {{month}}.",
+    "mtdTitle": "Same-Period Spending by Category",
+    "mtdCurrentPeriod": "This Period ({{range}})",
+    "mtdPreviousPeriod": "Last Period ({{range}})",
+    "mtdDifference": "Difference",
+    "mtdNoData": "No expenses recorded for {{currentRange}} or {{previousRange}}."
   },
   "budget": {
     "modalTitle": "Category Settings",

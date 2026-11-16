@@ -158,7 +158,12 @@
     "spentAmount": "지출액",
     "monthTab": "{{month}}월",
     "prevMonthTab": "지난달 ({{month}}월)",
-    "noExpenseInMonth": "{{month}}월에는 지출 내역이 없습니다."
+    "noExpenseInMonth": "{{month}}월에는 지출 내역이 없습니다.",
+    "mtdTitle": "카테고리별 동일 기간 지출 비교",
+    "mtdCurrentPeriod": "이번 기간 ({{range}})",
+    "mtdPreviousPeriod": "지난 기간 ({{range}})",
+    "mtdDifference": "차액",
+    "mtdNoData": "{{currentRange}} 또는 {{previousRange}} 기간의 지출 내역이 없습니다."
   },
   "budget": {
     "modalTitle": "카테고리 및 예산 설정",

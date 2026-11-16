@@ -6,6 +6,7 @@ import { Expense, AppSettings, DEFAULT_SETTINGS, PersonaType, CurrencyCode } fro
 import { ExpenseForm } from './components/ExpenseForm';
 import { CombinedPieChartWidget } from './components/CombinedPieChartWidget';
 import { BarChartWidget } from './components/BarChartWidget';
+import { CategoryComparisonBarWidget } from './components/CategoryComparisonBarWidget';
 import { BudgetAlertsWidget } from './components/BudgetAlertsWidget';
 import { BudgetSettingsModal } from './components/BudgetSettingsModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -641,29 +642,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Privacy Mode Quick Toggle */}
-            <button
-              onClick={() => handleUpdateSettings({ privacyMode: !settings.privacyMode })}
-              className={`liquid-glass-pill text-xs font-bold flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl transition-all cursor-pointer shadow-2xs hover:bg-white/90 dark:hover:bg-slate-800/90 ${
-                settings.privacyMode
-                  ? 'text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700'
-                  : 'text-slate-600 dark:text-slate-300'
-              }`}
-              title={settings.privacyMode ? t('dashboard.privacyHiddenTip') : t('dashboard.privacyVisibleTip')}
-            >
-              {settings.privacyMode ? (
-                <>
-                  <EyeOff className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="hidden sm:inline">{t('dashboard.hideBalance')}</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{t('dashboard.showBalance')}</span>
-                </>
-              )}
-            </button>
-
             {/* Fintech Settings Trigger */}
             <button
               id="settings-trigger-btn"
@@ -745,11 +723,14 @@ export default function App() {
                <div className="flex items-center gap-1.5">
                  <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('dashboard.balance')}</span>
                  <button
+                   type="button"
+                   id="balance-privacy-toggle"
                    onClick={() => handleUpdateSettings({ privacyMode: !settings.privacyMode })}
-                   className="p-1 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/60 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                   className="p-1.5 rounded-xl text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/70 dark:hover:bg-slate-800 transition-all cursor-pointer"
                    title={settings.privacyMode ? t('dashboard.privacyHiddenTip') : t('dashboard.privacyVisibleTip')}
+                   aria-label={settings.privacyMode ? t('dashboard.showBalance') : t('dashboard.hideBalance')}
                  >
-                   {settings.privacyMode ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5" />}
+                   {settings.privacyMode ? <EyeOff className="w-4 h-4 text-amber-500" /> : <Eye className="w-4 h-4" />}
                  </button>
                </div>
                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-500/10 border border-blue-400/30 flex items-center justify-center text-blue-600">
@@ -898,6 +879,17 @@ export default function App() {
                  (e.type === 'expense' || !e.type) && !e.isResolved
                )} 
                baseCurrency={settings.currency}
+            />
+          </div>
+
+          {/* Standalone Same-Period (Month-to-Date) Category Bar Chart */}
+          <div className="mb-8">
+            <CategoryComparisonBarWidget
+              expenses={expenses}
+              currentMonthKey={currentMonth}
+              previousMonthKey={previousMonth}
+              categories={categories}
+              baseCurrency={settings.currency}
             />
           </div>
         </section>
