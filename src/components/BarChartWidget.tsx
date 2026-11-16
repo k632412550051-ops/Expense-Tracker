@@ -93,7 +93,7 @@ export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND'
   }, [expenses, currentMonthKey, baseCurrency, i18n.language, useRealTime, realTimeMonthKey]);
 
   return (
-    <div className="liquid-glass rounded-3xl p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col h-[400px] overflow-hidden">
+    <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[430px] h-full overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
@@ -142,9 +142,9 @@ export function BarChartWidget({ expenses, currentMonthKey, baseCurrency = 'VND'
         )}
       </div>
 
-      <div className="w-full" style={{ minWidth: 0, height: 300 }}>
+      <div className="w-full flex-1 flex items-center" style={{ minWidth: 0, height: 320 }}>
         {isMounted && (
-          <ResponsiveContainer width="100%" height={300} minWidth={0}>
+          <ResponsiveContainer width="100%" height={320} minWidth={0}>
             <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">

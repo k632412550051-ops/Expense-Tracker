@@ -35,7 +35,7 @@ interface ComparisonRow {
 }
 
 interface TotalComparisonRow {
-  key: 'current' | 'prevSamePeriod' | 'prevFullMonth';
+  key: 'prevSamePeriod' | 'current';
   name: string;
   amount: number;
   subLabel: string;
@@ -82,7 +82,6 @@ export function CategoryComparisonBarWidget({
     previousRangeLabel,
     currentPeriodTotal,
     previousPeriodTotal,
-    previousFullMonthTotal,
     totalDiff,
     totalDiffPercent,
   } = useMemo(() => {
@@ -99,7 +98,6 @@ export function CategoryComparisonBarWidget({
 
     let curTotal = 0;
     let prevTotal = 0;
-    let prevFullTotal = 0;
 
     expenses.forEach((exp) => {
       if (exp.type === 'income' || exp.isResolved) return;
@@ -121,7 +119,6 @@ export function CategoryComparisonBarWidget({
         }
 
         if (exp.amortizedMonths.includes(previousMonthKey)) {
-          prevFullTotal += split;
           const includePrev = expMonth === previousMonthKey ? expDay <= prevCutoff : true;
           if (includePrev) {
             prevSums[exp.category] = (prevSums[exp.category] || 0) + split;
@@ -132,12 +129,9 @@ export function CategoryComparisonBarWidget({
         if (expMonth === currentMonthKey && expDay <= curCutoff) {
           curSums[exp.category] = (curSums[exp.category] || 0) + converted;
           curTotal += converted;
-        } else if (expMonth === previousMonthKey) {
-          prevFullTotal += converted;
-          if (expDay <= prevCutoff) {
-            prevSums[exp.category] = (prevSums[exp.category] || 0) + converted;
-            prevTotal += converted;
-          }
+        } else if (expMonth === previousMonthKey && expDay <= prevCutoff) {
+          prevSums[exp.category] = (prevSums[exp.category] || 0) + converted;
+          prevTotal += converted;
         }
       }
     });
@@ -164,22 +158,12 @@ export function CategoryComparisonBarWidget({
 
     const curRange = formatDayRangeLabel(currentMonthKey, curCutoff);
     const prevRange = formatDayRangeLabel(previousMonthKey, prevCutoff);
-    const prevFullRange = formatDayRangeLabel(previousMonthKey, prevDays);
 
     const diffVal = curTotal - prevTotal;
     const diffPct = prevTotal > 0 ? (diffVal / prevTotal) * 100 : null;
 
+    // Left = Previous month same period, Right = Current month same period
     const totalBars: TotalComparisonRow[] = [
-      {
-        key: 'current',
-        name: t('charts.mtdBarCurrent', {
-          month: currentMonthNum,
-          range: curRange,
-          defaultValue: `Tháng ${currentMonthNum} (${curRange})`,
-        }),
-        amount: curTotal,
-        subLabel: curRange,
-      },
       {
         key: 'prevSamePeriod',
         name: t('charts.mtdBarPrevSame', {
@@ -191,13 +175,14 @@ export function CategoryComparisonBarWidget({
         subLabel: prevRange,
       },
       {
-        key: 'prevFullMonth',
-        name: t('charts.mtdBarPrevFull', {
-          month: prevMonthNum,
-          defaultValue: `Cả tháng ${prevMonthNum}`,
+        key: 'current',
+        name: t('charts.mtdBarCurrent', {
+          month: currentMonthNum,
+          range: curRange,
+          defaultValue: `Tháng ${currentMonthNum} (${curRange})`,
         }),
-        amount: prevFullTotal,
-        subLabel: prevFullRange,
+        amount: curTotal,
+        subLabel: curRange,
       },
     ];
 
@@ -209,7 +194,6 @@ export function CategoryComparisonBarWidget({
       previousRangeLabel: prevRange,
       currentPeriodTotal: curTotal,
       previousPeriodTotal: prevTotal,
-      previousFullMonthTotal: prevFullTotal,
       totalDiff: diffVal,
       totalDiffPercent: diffPct,
     };
@@ -290,20 +274,20 @@ export function CategoryComparisonBarWidget({
         <div className="flex flex-col gap-1.5 tabular-nums">
           <div className="flex items-center justify-between gap-4">
             <span className="flex items-center gap-1.5 text-slate-300">
-              <span className="w-2.5 h-2.5 rounded-xs bg-blue-500 shrink-0" />
-              {currentRangeLabel}
-            </span>
-            <span className="font-bold text-white">
-              {formatCurrency(row.current, baseCurrency)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="flex items-center gap-1.5 text-slate-300">
               <span className="w-2.5 h-2.5 rounded-xs bg-slate-400 shrink-0" />
               {previousRangeLabel}
             </span>
             <span className="font-semibold text-slate-300">
               {formatCurrency(row.previous, baseCurrency)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="flex items-center gap-1.5 text-slate-300">
+              <span className="w-2.5 h-2.5 rounded-xs bg-blue-500 shrink-0" />
+              {currentRangeLabel}
+            </span>
+            <span className="font-bold text-white">
+              {formatCurrency(row.current, baseCurrency)}
             </span>
           </div>
           <div className="pt-1.5 mt-0.5 border-t border-white/10 flex items-center justify-between gap-4">
@@ -341,7 +325,7 @@ export function CategoryComparisonBarWidget({
 
   const hasAnyData =
     viewMode === 'total'
-      ? currentPeriodTotal > 0 || previousPeriodTotal > 0 || previousFullMonthTotal > 0
+      ? currentPeriodTotal > 0 || previousPeriodTotal > 0
       : categoryData.length > 0;
 
   const isPrivacy = getGlobalPrivacyMode();
@@ -402,19 +386,9 @@ export function CategoryComparisonBarWidget({
         </div>
       </div>
 
-      {/* Clear Comparison Summary Strip (Always visible, tabular-nums, hairline border) */}
+      {/* Clear Comparison Summary Strip (Left: Previous month, Right: Current month) */}
       <div className="flex flex-wrap items-center justify-between gap-3 py-2.5 px-3.5 mb-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/50 text-xs tabular-nums">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-blue-600 shrink-0" />
-            <span className="text-slate-500 dark:text-slate-400 font-medium">
-              {t('charts.mtdCurrentPeriod', { range: currentRangeLabel, defaultValue: `Kỳ này (${currentRangeLabel})` })}:
-            </span>
-            <strong className="font-extrabold text-slate-900 dark:text-white">
-              {formatCurrency(currentPeriodTotal, baseCurrency)}
-            </strong>
-          </div>
-
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-xs bg-slate-400 shrink-0" />
             <span className="text-slate-500 dark:text-slate-400 font-medium">
@@ -422,6 +396,16 @@ export function CategoryComparisonBarWidget({
             </span>
             <strong className="font-bold text-slate-700 dark:text-slate-200">
               {formatCurrency(previousPeriodTotal, baseCurrency)}
+            </strong>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-xs bg-blue-600 shrink-0" />
+            <span className="text-slate-500 dark:text-slate-400 font-medium">
+              {t('charts.mtdCurrentPeriod', { range: currentRangeLabel, defaultValue: `Kỳ này (${currentRangeLabel})` })}:
+            </span>
+            <strong className="font-extrabold text-slate-900 dark:text-white">
+              {formatCurrency(currentPeriodTotal, baseCurrency)}
             </strong>
           </div>
         </div>
@@ -514,7 +498,7 @@ export function CategoryComparisonBarWidget({
                   cursor={{ fill: 'rgba(56, 189, 248, 0.08)' }}
                   content={renderTotalTooltip}
                 />
-                <Bar dataKey="amount" radius={[8, 8, 0, 0]} maxBarSize={68}>
+                <Bar dataKey="amount" radius={[8, 8, 0, 0]} maxBarSize={76}>
                   <LabelList
                     dataKey="amount"
                     position="top"
@@ -542,11 +526,9 @@ export function CategoryComparisonBarWidget({
                       fill={
                         entry.key === 'current'
                           ? 'url(#mtdTotalCurrentGrad)'
-                          : entry.key === 'prevSamePeriod'
-                          ? '#94a3b8'
-                          : '#cbd5e1'
+                          : '#94a3b8'
                       }
-                      fillOpacity={entry.key === 'prevFullMonth' ? 0.65 : 1}
+                      fillOpacity={entry.key === 'prevSamePeriod' ? 0.85 : 1}
                     />
                   ))}
                 </Bar>
@@ -597,17 +579,17 @@ export function CategoryComparisonBarWidget({
                   content={renderCategoryTooltip}
                 />
                 <Bar
-                  dataKey="current"
-                  name={currentRangeLabel}
-                  fill="url(#mtdCurrentBarGradient)"
+                  dataKey="previous"
+                  name={previousRangeLabel}
+                  fill="#94a3b8"
+                  fillOpacity={0.8}
                   radius={[6, 6, 0, 0]}
                   maxBarSize={32}
                 />
                 <Bar
-                  dataKey="previous"
-                  name={previousRangeLabel}
-                  fill="#94a3b8"
-                  fillOpacity={0.75}
+                  dataKey="current"
+                  name={currentRangeLabel}
+                  fill="url(#mtdCurrentBarGradient)"
                   radius={[6, 6, 0, 0]}
                   maxBarSize={32}
                 />

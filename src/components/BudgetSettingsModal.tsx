@@ -285,7 +285,7 @@ export function BudgetSettingsModal({
                               onChange={(e) => handleSetCategoryColor(category, e.target.value)}
                               className="w-6 h-6 rounded border-0 cursor-pointer p-0 bg-transparent"
                             />
-                            <span className="text-xs font-mono text-gray-600 dark:text-slate-300 uppercase">{currentColor}</span>
+                            <span className="text-xs font-sans tabular-nums text-gray-600 dark:text-slate-300 uppercase">{currentColor}</span>
                           </div>
                         </div>
                       )}

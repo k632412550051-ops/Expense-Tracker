@@ -69,26 +69,28 @@ export function CombinedPieChartWidget({
     const cos = Math.cos(-midAngle * RADIAN);
     const sin = Math.sin(-midAngle * RADIAN);
 
-    // Internal percentage coordinate (60% of outerRadius on a solid pie)
-    const innerRadiusPos = outerRadius * 0.6;
+    // Internal percentage coordinate placed further out into the wider part of the wedge
+    const innerRadiusPos = outerRadius * 0.66;
     const ix = cx + innerRadiusPos * cos;
     const iy = cy + innerRadiusPos * sin;
 
-    // External callout leader line coordinates
+    // Compact external callout leader line coordinates so category names have ample room
     const sx = cx + outerRadius * cos;
     const sy = cy + outerRadius * sin;
-    const mx = cx + (outerRadius + 14) * cos;
-    const my = cy + (outerRadius + 14) * sin;
+    const mx = cx + (outerRadius + 9) * cos;
+    const my = cy + (outerRadius + 9) * sin;
     const isRight = cos >= 0;
-    const ex = mx + (isRight ? 12 : -12);
+    const ex = mx + (isRight ? 10 : -10);
     const ey = my;
     const tx = ex + (isRight ? 5 : -5);
 
-    const displayName = name.length > 16 ? `${name.slice(0, 15)}…` : name;
+    const maxChars = cx >= 210 ? 24 : 15;
+    const displayName =
+      name.length > maxChars ? `${name.slice(0, maxChars - 1)}…` : name;
 
     return (
       <g className="pointer-events-none">
-        {/* Internal % for slices >= 5% */}
+        {/* Internal % for slices >= 5%, clean crisp white without outline */}
         {percent >= 0.05 && (
           <text
             x={ix}
@@ -96,11 +98,8 @@ export function CombinedPieChartWidget({
             textAnchor="middle"
             dominantBaseline="central"
             fill="#ffffff"
-            stroke="rgba(15, 23, 42, 0.45)"
-            strokeWidth={2.5}
-            paintOrder="stroke"
-            fontSize="12px"
-            fontWeight="800"
+            fontSize="12.5px"
+            fontWeight="700"
             className="tabular-nums"
           >
             {`${(percent * 100).toFixed(0)}%`}
@@ -121,8 +120,8 @@ export function CombinedPieChartWidget({
           y={ey}
           textAnchor={isRight ? 'start' : 'end'}
           dominantBaseline="central"
-          fontSize="11.5px"
-          fontWeight="700"
+          fontSize="12px"
+          fontWeight="600"
           className="fill-slate-700 dark:fill-slate-200"
         >
           {displayName}
@@ -159,7 +158,7 @@ export function CombinedPieChartWidget({
   };
 
   return (
-    <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[400px] overflow-hidden">
+    <div className="liquid-glass rounded-3xl p-5 sm:p-6 relative shadow-xl shadow-blue-950/5 border border-white/85 dark:border-white/10 dark:bg-slate-900/60 flex flex-col min-h-[430px] h-full overflow-hidden">
       {/* Top specular highlight */}
       <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent opacity-90 dark:opacity-30 pointer-events-none" />
 
@@ -218,16 +217,16 @@ export function CombinedPieChartWidget({
           <p>{t('charts.noExpenseInMonth', { month: activeLabel })}</p>
         </div>
       ) : (
-        <div className="w-full flex-1 flex items-center" style={{ minWidth: 0, height: 310 }}>
+        <div className="w-full flex-1 flex items-center" style={{ minWidth: 0, height: 340 }}>
           {isMounted && (
-            <ResponsiveContainer width="100%" height={310} minWidth={0}>
-              <PieChart margin={{ top: 18, right: 20, bottom: 18, left: 20 }}>
+            <ResponsiveContainer width="100%" height={340} minWidth={0}>
+              <PieChart margin={{ top: 14, right: 20, bottom: 14, left: 20 }}>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
                   innerRadius={0}
-                  outerRadius="54%"
+                  outerRadius="72%"
                   paddingAngle={0}
                   dataKey="value"
                   label={renderPieLabel}
