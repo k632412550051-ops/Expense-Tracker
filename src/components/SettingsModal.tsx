@@ -12,8 +12,6 @@ import {
   LogOut, 
   Eye, 
   EyeOff, 
-  Sliders, 
-  ChevronRight,
   TrendingUp,
   Sparkles,
   Plane,
@@ -55,7 +53,6 @@ interface SettingsModalProps {
   };
   userProfile?: UserProfile | null;
   onUpdateProfile?: (data: Partial<UserProfile>) => Promise<void>;
-  onOpenBudgetModal: () => void;
   onLogout: () => void;
   expenses?: Expense[];
   onSyncExpensesCalendar?: () => Promise<number>;
@@ -70,7 +67,6 @@ export function SettingsModal({
   user,
   userProfile,
   onUpdateProfile,
-  onOpenBudgetModal,
   onLogout,
   expenses = [],
   onSyncExpensesCalendar,
@@ -361,30 +357,6 @@ export function SettingsModal({
                         />
                         <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                       </label>
-                    </div>
-
-                    {/* Budget & Category Management Entry Point */}
-                    <div 
-                      id="settings-open-budget-btn"
-                      onClick={() => {
-                        onOpenBudgetModal();
-                      }}
-                      className="p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-white/90 dark:border-slate-700/60 shadow-xs hover:border-blue-300 dark:hover:border-blue-500/40 hover:bg-white dark:hover:bg-slate-800 transition-all flex items-center justify-between cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20 shrink-0">
-                          <Sliders className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {t('settings.budgetTitle', { defaultValue: 'Quản lý danh mục & hạn mức' })}
-                          </h4>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {t('settings.budgetDesc', { defaultValue: 'Thêm, sửa, đổi màu hoặc xóa danh mục thu chi' })}
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
                     </div>
                   </motion.div>
                 )}

@@ -841,7 +841,6 @@ export default function App() {
           <TransactionHistory 
             expenses={expenses}
             currentMonth={currentMonth}
-            onMonthChange={setCurrentMonth}
             categories={categories}
             incomeCategories={incomeCategories}
             categoryColors={categoryColors}
@@ -905,7 +904,6 @@ export default function App() {
         user={user}
         userProfile={userProfile}
         onUpdateProfile={updateUserProfile}
-        onOpenBudgetModal={() => setIsBudgetModalOpen(true)}
         onLogout={async () => {
           if (isGuestMode || !firebaseUser) {
             exitGuestMode();

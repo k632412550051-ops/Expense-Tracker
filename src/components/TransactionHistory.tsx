@@ -10,8 +10,6 @@ import {
   List, 
   Filter, 
   Search, 
-  ChevronLeft, 
-  ChevronRight, 
   X, 
   Trash2, 
   ArrowUpRight, 
@@ -23,7 +21,6 @@ import {
 interface TransactionHistoryProps {
   expenses: Expense[];
   currentMonth: string; // YYYY-MM
-  onMonthChange: (month: string) => void;
   categories: Category[];
   incomeCategories: Category[];
   categoryColors?: Record<string, string>;
@@ -35,7 +32,6 @@ interface TransactionHistoryProps {
 export function TransactionHistory({
   expenses,
   currentMonth,
-  onMonthChange,
   categories,
   incomeCategories,
   categoryColors,
@@ -57,41 +53,6 @@ export function TransactionHistory({
   const [yearStr, monthStr] = currentMonth.split('-');
   const currentYear = parseInt(yearStr, 10);
   const currentMonthNum = parseInt(monthStr, 10);
-
-  // Check if viewing current actual month
-  const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-  const actualCurrentMonth = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 7);
-  const isViewingCurrentActualMonth = currentMonth === actualCurrentMonth;
-
-  const [navDirection, setNavDirection] = useState<'prev' | 'next' | 'current'>('next');
-
-  // Month navigation helpers
-  const handlePrevMonth = () => {
-    setNavDirection('prev');
-    let year = currentYear;
-    let month = currentMonthNum - 1;
-    if (month < 1) {
-      month = 12;
-      year -= 1;
-    }
-    onMonthChange(`${year}-${month.toString().padStart(2, '0')}`);
-  };
-
-  const handleNextMonth = () => {
-    setNavDirection('next');
-    let year = currentYear;
-    let month = currentMonthNum + 1;
-    if (month > 12) {
-      month = 1;
-      year += 1;
-    }
-    onMonthChange(`${year}-${month.toString().padStart(2, '0')}`);
-  };
-
-  const handleCurrentMonthReturn = () => {
-    setNavDirection(currentMonth < actualCurrentMonth ? 'next' : 'prev');
-    onMonthChange(actualCurrentMonth);
-  };
 
   const todayDateStr = useMemo(() => {
     const tz = (new Date()).getTimezoneOffset() * 60000;
@@ -221,9 +182,9 @@ export function TransactionHistory({
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.p 
                     key={`month-label-${currentMonth}`}
-                    initial={{ opacity: 0, y: navDirection === 'prev' ? -6 : navDirection === 'next' ? 6 : 0 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: navDirection === 'prev' ? 6 : navDirection === 'next' ? -6 : 0 }}
+                    exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.16 }}
                     className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5"
                   >
@@ -234,53 +195,8 @@ export function TransactionHistory({
             </div>
           </div>
 
-          {/* Month Stepper & View Mode Switcher */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end mt-1 sm:mt-0">
-            {/* Prev / Current Month / Next */}
-            <div className="flex items-center liquid-glass-pill p-1 rounded-2xl border border-white/90 dark:border-white/15 relative">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                id="prev-month-btn"
-                onClick={handlePrevMonth}
-                className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
-                title={t('history.prevMonth')}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </motion.button>
-              <button
-                type="button"
-                id="current-month-btn"
-                onClick={handleCurrentMonthReturn}
-                className={cn(
-                  "relative px-3 py-1 text-xs font-bold rounded-xl transition-colors cursor-pointer z-10",
-                  isViewingCurrentActualMonth 
-                    ? "text-white" 
-                    : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80"
-                )}
-                title={t('history.currentMonth')}
-              >
-                {isViewingCurrentActualMonth && (
-                  <motion.div
-                    layoutId="historyActiveMonthIndicator"
-                    className="absolute inset-0 bg-blue-600 rounded-xl shadow-xs -z-10"
-                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                  />
-                )}
-                {t('history.currentMonth')}
-              </button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                id="next-month-btn"
-                onClick={handleNextMonth}
-                className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-white/80 dark:hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
-                title={t('history.nextMonth')}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </motion.button>
-            </div>
-
+          {/* View Mode Switcher */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end mt-1 sm:mt-0">
             {/* View Mode Toggle */}
             <div className="flex items-center p-1 rounded-2xl bg-blue-950/5 dark:bg-slate-900/60 border border-white/70 dark:border-white/15 backdrop-blur-md relative">
               <button
@@ -417,14 +333,14 @@ export function TransactionHistory({
             key={`calendar-view-${currentMonth}`}
             initial={{ 
               opacity: 0, 
-              x: navDirection === 'prev' ? -18 : navDirection === 'next' ? 18 : 0,
-              scale: 0.99
+              y: 8,
+              scale: 0.995
             }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ 
               opacity: 0, 
-              x: navDirection === 'prev' ? 18 : navDirection === 'next' ? -18 : 0,
-              scale: 0.99
+              y: -8,
+              scale: 0.995
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="p-3 sm:p-6 overflow-x-auto"
@@ -564,14 +480,14 @@ export function TransactionHistory({
             key={`list-view-${currentMonth}`}
             initial={{ 
               opacity: 0, 
-              x: navDirection === 'prev' ? -18 : navDirection === 'next' ? 18 : 0,
-              scale: 0.99
+              y: 8,
+              scale: 0.995
             }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ 
               opacity: 0, 
-              x: navDirection === 'prev' ? 18 : navDirection === 'next' ? -18 : 0,
-              scale: 0.99
+              y: -8,
+              scale: 0.995
             }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="p-4 sm:p-6"
